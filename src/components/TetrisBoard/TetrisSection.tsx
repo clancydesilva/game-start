@@ -16,8 +16,66 @@ interface LandedPiece {
   isDestroyed: boolean;
 }
 
+// Preset tetromino shapes (relative coordinates)
+const PIECE_SHAPES: Record<string, GridCell[]> = {
+  // T-Piece (width 3, height 2)
+  T: [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }],
+  // O-Piece (2x2)
+  O: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }],
+  // Vertical L-Piece (width 2, height 3)
+  L: [{ x: 0, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 1, y: 2 }],
+  // S-Piece (width 3, height 2)
+  S: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }],
+  // I-Piece (horizontal 4-bar)
+  I: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }],
+  // Z-Piece (width 3, height 2)
+  Z: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 1 }],
+  // J-Piece (width 2, height 3)
+  J: [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 2 }, { x: 1, y: 2 }]
+};
+
+// Target column for each project descent
+const TARGET_COLUMNS = [1, 4, 0, 1, 0, 3, 0, 4];
+
+/**
+ * Calculates the lowest valid landing row (landingY) for a piece
+ * so that it lands directly on top of the floor or existing landed blocks (real Tetris gravity)
+ */
+function findLandingY(
+  landed: LandedPiece[],
+  pieceCells: GridCell[],
+  anchorX: number
+): number {
+  let bestY = 0;
+  for (let testY = 0; testY < TETRIS_ROWS; testY++) {
+    let valid = true;
+    for (const c of pieceCells) {
+      const cellX = anchorX + c.x;
+      const cellY = testY + c.y;
+
+      if (cellY >= TETRIS_ROWS || cellX < 0 || cellX >= TETRIS_COLS) {
+        valid = false;
+        break;
+      }
+
+      for (const p of landed) {
+        if (!p.isDestroyed && p.cells.some((lc) => lc.x === cellX && lc.y === cellY)) {
+          valid = false;
+          break;
+        }
+      }
+    }
+
+    if (valid) {
+      bestY = testY;
+    } else {
+      break;
+    }
+  }
+  return bestY;
+}
+
 export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) => {
-  // Scoped ref for the Game View scroll zone
   const gameViewRef = useRef<HTMLDivElement>(null);
 
   // Active game state
@@ -39,45 +97,49 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
   const nextProject: ProjectItem | null =
     currentProjectIndex + 1 < totalProjects ? PROJECTS[currentProjectIndex + 1] : null;
 
-  // Calculate coordinates of the currently active falling piece based on motionStep (0 to 4)
+  // Get raw piece shape cells for active project
+  const getPieceShape = useCallback((): GridCell[] => {
+    if (!currentProject) return [];
+    return PIECE_SHAPES[currentProject.type] || PIECE_SHAPES.O;
+  }, [currentProject]);
+
+  // Target X column for active project
+  const targetX = TARGET_COLUMNS[currentProjectIndex % TARGET_COLUMNS.length];
+
+  // Calculate coordinates of the currently active falling piece based on motionStep
   const getActivePieceCells = useCallback((): GridCell[] => {
     if (!currentProject) return [];
-
-    const finalCells = currentProject.solvedCells;
-    const finalMinX = Math.min(...finalCells.map((c) => c.x));
-    const finalMinY = Math.min(...finalCells.map((c) => c.y));
-
-    const relCells = finalCells.map((c) => ({
-      x: c.x - finalMinX,
-      y: c.y - finalMinY
-    }));
+    const shape = getPieceShape();
 
     if (motionStep === 0) {
-      // Top center
+      // Step 0: Spawn at top center
       const spawnX = Math.max(0, Math.floor((TETRIS_COLS - 3) / 2));
-      return relCells.map((c) => ({ x: spawnX + c.x, y: c.y }));
+      return shape.map((c) => ({ x: spawnX + c.x, y: c.y }));
     } else if (motionStep === 1) {
       // Step 1: Moves down
       const spawnX = Math.max(0, Math.floor((TETRIS_COLS - 3) / 2));
-      return relCells.map((c) => ({ x: spawnX + c.x, y: c.y + 2 }));
+      return shape.map((c) => ({ x: spawnX + c.x, y: c.y + 1 }));
     } else if (motionStep === 2) {
-      // Step 2: Rotates / Turns
-      const targetMidX = Math.round((finalMinX + 1) / 2);
-      return relCells.map((c) => ({
-        x: Math.min(TETRIS_COLS - 1, Math.max(0, targetMidX + c.y)),
-        y: Math.min(TETRIS_ROWS - 1, c.x + 3)
+      // Step 2: Turns / Rotates (swaps relative offsets)
+      return shape.map((c) => ({
+        x: Math.min(TETRIS_COLS - 1, Math.max(0, targetX + c.y)),
+        y: c.x + 2
       }));
     } else if (motionStep === 3) {
-      // Step 3: Shifts horizontally toward target columns
-      return relCells.map((c) => ({
-        x: finalMinX + c.x,
-        y: Math.max(0, finalMinY - 2 + c.y)
+      // Step 3: Shifts horizontally toward targetX
+      return shape.map((c) => ({
+        x: targetX + c.x,
+        y: c.y + 3
       }));
     } else {
-      // Step 4: Final resting landing cells
-      return finalCells;
+      // Step 4: Drops and lands directly on floor or existing landed blocks
+      const landingY = findLandingY(landedPieces, shape, targetX);
+      return shape.map((c) => ({
+        x: targetX + c.x,
+        y: landingY + c.y
+      }));
     }
-  }, [currentProject, motionStep]);
+  }, [currentProject, motionStep, targetX, landedPieces, getPieceShape]);
 
   // Advance game by 1 step
   const advanceStep = useCallback(() => {
@@ -90,11 +152,17 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
         sfx.playRotate();
       }
     } else if (motionStep === 3) {
-      // Piece lands
+      // Step 4: Drop and land onto the stack
       sfx.playDrop();
       setMotionStep(4);
 
-      const landedCells = currentProject.solvedCells;
+      const shape = getPieceShape();
+      const landingY = findLandingY(landedPieces, shape, targetX);
+      const landedCells = shape.map((c) => ({
+        x: targetX + c.x,
+        y: landingY + c.y
+      }));
+
       const newLandedPiece: LandedPiece = {
         project: currentProject,
         cells: landedCells,
@@ -111,7 +179,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
         return nextScore;
       });
 
-      // Check for completely filled rows across all 6 columns
+      // Check for filled rows across all 6 columns
       const filledRowIndices: number[] = [];
       for (let r = 0; r < TETRIS_ROWS; r++) {
         const cellsInRow = updatedLanded.flatMap((p) =>
@@ -124,7 +192,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
       }
 
       if (filledRowIndices.length > 0) {
-        // Line clear!
+        // Line clear flash!
         setClearingRowIndices(filledRowIndices);
         sfx.playLineClear();
 
@@ -135,7 +203,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
           return bonus;
         });
 
-        // Find all projects that had blocks in ANY of the cleared lines
+        // Find all projects that had blocks in the cleared row(s)
         const newlyUnlockedProjects = updatedLanded
           .filter((p) => p.cells.some((c) => filledRowIndices.includes(c.y)))
           .map((p) => p.project.id);
@@ -152,21 +220,44 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
         }
 
         setTimeout(() => {
-          setLandedPieces((prev) =>
-            prev.map((p) =>
-              newlyUnlockedProjects.includes(p.project.id)
-                ? { ...p, isDestroyed: true }
-                : p
-            )
-          );
+          // REAL TETRIS GRAVITY COLLAPSE:
+          // 1. Destroy cells in filled rows
+          // 2. Any surviving floating cells fall downward by the number of cleared rows below them
+          setLandedPieces((prev) => {
+            return prev
+              .map((piece) => {
+                const survivingCells = piece.cells.filter(
+                  (c) => !filledRowIndices.includes(c.y)
+                );
+
+                const droppedCells = survivingCells.map((c) => {
+                  const dropAmount = filledRowIndices.filter((ry) => ry > c.y).length;
+                  return {
+                    x: c.x,
+                    y: c.y + dropAmount
+                  };
+                });
+
+                return {
+                  ...piece,
+                  cells: droppedCells,
+                  isDestroyed: droppedCells.length === 0
+                };
+              })
+              .filter((p) => p.cells.length > 0);
+          });
+
+          // Soft thud for blocks settling at the bottom
+          sfx.playDrop();
+
           setClearedProjectIds((prev) => [
             ...new Set([...prev, ...newlyUnlockedProjects])
           ]);
           setClearingRowIndices([]);
-        }, 650);
+        }, 550);
       }
 
-      // Next project
+      // Prepare next project
       setTimeout(() => {
         if (currentProjectIndex + 1 < totalProjects) {
           setCurrentProjectIndex((prev) => prev + 1);
@@ -182,6 +273,8 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
     currentProject,
     motionStep,
     landedPieces,
+    targetX,
+    getPieceShape,
     currentProjectIndex,
     totalProjects,
     clearedProjectIds,
@@ -214,7 +307,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
 
     let wheelAccum = 0;
     const handleWheel = (e: WheelEvent) => {
-      e.preventDefault(); // Stop window scroll only within the game view zone
+      e.preventDefault();
       e.stopPropagation();
       wheelAccum += e.deltaY;
 
@@ -315,7 +408,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
             <span className="title-tetris">TETRIS</span> REPOSITORY ENGINE
           </h2>
           <p className="arcade-instruction">
-            3 SCROLL ZONES: HOVER GAME TO ADVANCE • HOVER SIDEBAR TO BROWSE • SCROLL OUTSIDE FOR SITE
+            REAL TETRIS GRAVITY: CLEARED LINES DESTROY BLOCKS • FLOATING BLOCKS FALL TO BOTTOM & STACK
           </p>
         </div>
 
@@ -384,7 +477,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
 
           <div className="tetris-board-frame">
             <div className="board-top-marquee">
-              <span>● 6-COLUMN PURE SQUARE MATRIX ●</span>
+              <span>● 6-COLUMN PURE SQUARE MATRIX // GRAVITY ACTIVE ●</span>
             </div>
 
             <div className="tetris-grid-container">
@@ -413,7 +506,6 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
                             cell.isClearedRow ? 'row-clearing-flash' : ''
                           }`}
                           onClick={() => {
-                            // Block is ONLY clickable when it has stopped moving (isLanded)
                             if (canClick && cell.project) {
                               setSelectedProject(cell.project);
                             }
@@ -445,7 +537,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
             </div>
 
             <div className="board-sub-note">
-              <span>★ HOVER & WHEEL SCROLL TO ADVANCE PIECES ★</span>
+              <span>★ DESTROYED ROWS TRIGGER GRAVITY DROP TO BOTTOM ★</span>
             </div>
           </div>
 
@@ -463,7 +555,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
             <div>
               <span className="queue-title">CLEARED REPOSITORIES</span>
               <p className="queue-sub">
-                FILL A ROW TO DESTROY BLOCKS & UNLOCK PROJECTS (MULTIPLE CAN UNLOCK AT ONCE!)
+                DESTROYED ROWS COLLAPSE FLOATING BLOCKS & UNLOCK NORMAL PROJECT SECTIONS
               </p>
             </div>
             <span className="unlocked-counter-badge">
@@ -553,11 +645,11 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
                       <div className="pnd-lock-notice">
                         {isLandedOnBoard ? (
                           <span className="notice-board">
-                            ▶ Block has landed on matrix! Click the block directly to inspect.
+                            ▶ Block on matrix! Click directly on block to inspect.
                           </span>
                         ) : (
                           <span className="notice-queue">
-                            ▶ Advance block & fill line to destroy piece and unlock full details here.
+                            ▶ Destroy row to collapse blocks & unlock full details here.
                           </span>
                         )}
                       </div>
