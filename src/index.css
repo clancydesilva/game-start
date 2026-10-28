@@ -269,7 +269,7 @@ body {
 }
 
 /* =========================================================
-   3D PIXEL TETRIS BLOCK SHADING
+   3D PIXEL TETRIS BLOCK SHADING (PURE SQUARES)
 ========================================================= */
 .tetris-pixel-block {
   box-sizing: border-box;
@@ -277,91 +277,96 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   border: 2px solid #000;
   box-shadow: 
-    inset 4px 4px 0px rgba(255, 255, 255, 0.8),
-    inset -4px -4px 0px rgba(0, 0, 0, 0.65);
-  transition: transform 0.15s, filter 0.15s;
+    inset 3px 3px 0px rgba(255, 255, 255, 0.8),
+    inset -3px -3px 0px rgba(0, 0, 0, 0.65);
+  transition: transform 0.1s, filter 0.1s;
   width: 100%;
   height: 100%;
+  aspect-ratio: 1 / 1;
 }
 
 .tetris-pixel-block:hover {
-  filter: brightness(1.25);
-  transform: scale(1.03);
-  z-index: 10;
+  filter: brightness(1.2);
 }
 
 .tetris-pixel-block.is-ghost {
-  border: 2px dashed rgba(255, 255, 255, 0.25);
+  border: 2px dashed rgba(255, 255, 255, 0.4);
   box-shadow: none;
-}
-
-.tetris-pixel-block.is-solved {
-  animation: pulseSolved 2s infinite alternate;
-}
-
-@keyframes pulseSolved {
-  0% { filter: brightness(1); }
-  100% { filter: brightness(1.2) drop-shadow(0 0 6px rgba(255, 255, 255, 0.5)); }
+  opacity: 0.6;
 }
 
 .block-label {
-  font-size: 10px;
+  font-size: 8px;
   color: #000;
   font-weight: bold;
   opacity: 0.85;
 }
 
 /* =========================================================
-   STICKY PINNED FULL-WIDTH TETRIS TRACK & STAGE
+   RESTORED 2-COLUMN TETRIS ARCADE LAYOUT
 ========================================================= */
 .arcade-cabinet-viewport {
-  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   min-height: calc(100vh - 180px);
-  padding: 0 0 60px;
+  padding: 24px 20px 60px;
 }
 
-/* The tall scroll runway (300vh) */
-.tetris-sticky-track {
-  position: relative;
-  height: 280vh;
-  width: 100%;
-}
-
-/* The pinned stage that stays in viewport as you scroll */
-.tetris-sticky-stage {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  width: 100%;
+.tetris-arcade-layout-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 24px 20px;
-  overflow: hidden;
-  background: var(--bg-deep);
+  gap: 18px;
 }
 
-/* HUD bar */
-.tetris-hud-bar {
+.arcade-cabinet-header {
   display: flex;
-  justify-content: center;
-  gap: 20px;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 3px solid var(--border-arcade);
+  padding-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.arcade-sub {
+  display: block;
+  font-size: 9px;
+  color: var(--border-glow);
+  margin-bottom: 6px;
+}
+
+.arcade-main-title {
+  font-size: 24px;
+  color: var(--text-bright);
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.title-tetris { color: var(--tetris-cyan); }
+.title-lab { color: var(--tetris-yellow); }
+.title-docs { color: var(--border-glow); }
+
+.arcade-instruction {
+  font-size: 9px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* HUD Panel */
+.arcade-hud-panel {
+  display: flex;
+  gap: 14px;
   background: #000;
   border: 2px solid var(--border-arcade);
-  padding: 8px 24px;
-  width: 100%;
-  max-width: 1400px;
+  padding: 8px 16px;
   flex-wrap: wrap;
 }
 
 .hud-metric {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 2px;
 }
 
@@ -377,40 +382,24 @@ body {
 
 .hud-score { color: var(--tetris-yellow); }
 .hud-lines { color: var(--tetris-cyan); }
-.hud-progress { color: #38bdf8; }
-.hud-zoom { color: #f472b6; }
+.hud-unlocked { color: var(--tetris-green); font-weight: bold; }
 .hud-active { color: var(--tetris-orange); animation: blink 1s infinite step-start; }
 .hud-solved { color: var(--tetris-green); font-weight: bold; }
 
-/* Control Buttons & Scroll Hint Bar */
-.tetris-control-bar {
+/* Control Buttons Bar */
+.arcade-controls-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  justify-content: center;
-  margin: 4px 0;
 }
 
-.scroll-indicator-pill {
-  background: #0d0f1c;
+.scroll-hint-tag {
+  background: #0b0d18;
   border: 1px dashed var(--tetris-cyan);
-  padding: 6px 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  padding: 6px 12px;
   font-size: 8px;
   color: var(--tetris-cyan);
-}
-
-.scroll-pulse-icon {
-  animation: pulseIcon 1.2s infinite ease-in-out;
-  font-size: 11px;
-}
-
-@keyframes pulseIcon {
-  0%, 100% { transform: translateY(-2px); }
-  50% { transform: translateY(2px); }
 }
 
 /* Generic Retro Buttons */
@@ -456,8 +445,13 @@ body {
 }
 
 .retro-btn.btn-sm {
-  padding: 6px 12px;
+  padding: 7px 12px;
   font-size: 8px;
+}
+
+.retro-btn.btn-xs {
+  padding: 5px 8px;
+  font-size: 7px;
 }
 
 .retro-btn.btn-primary {
@@ -465,8 +459,8 @@ body {
   color: #fff;
 }
 
-.retro-btn.btn-secondary {
-  background: var(--tetris-cyan);
+.retro-btn.btn-active {
+  background: var(--tetris-green);
   color: #000;
 }
 
@@ -475,92 +469,32 @@ body {
   border-color: var(--border-arcade);
 }
 
-.btn-tiny {
-  font-family: var(--pixel-font);
-  font-size: 8px;
-  padding: 4px 8px;
-  background: #000;
-  color: var(--tetris-cyan);
-  border: 1px solid var(--border-arcade);
-  cursor: pointer;
+/* 2-Column Arena Grid */
+.arcade-arena-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+  align-items: start;
 }
 
-/* Project Hover Inspector Banner */
-.project-inspector-banner {
-  width: 100%;
-  max-width: 1400px;
-  min-height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@media (max-width: 860px) {
+  .arcade-arena-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.inspector-content {
-  background: #0d0f1a;
-  border: 2px solid;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  box-shadow: 0 0 16px rgba(0, 0, 0, 0.6);
-  flex-wrap: wrap;
-}
-
-.inspector-dot {
-  width: 8px;
-  height: 8px;
-}
-
-.inspector-title {
-  font-size: 10px;
-  font-weight: bold;
-}
-
-.inspector-divider {
-  color: var(--text-dim);
-}
-
-.inspector-tagline {
-  font-size: 9px;
-  color: var(--text-main);
-  flex: 1;
-}
-
-.inspector-hint {
-  font-size: 8px;
-  color: var(--tetris-yellow);
-}
-
-.inspector-placeholder {
-  text-align: center;
-  font-size: 8px;
-  color: var(--text-dim);
-  padding: 8px;
-}
-
-/* Full-Width Dominant Board with Dynamic Camera Zoom */
-.tetris-fullscreen-board-container {
-  width: 100%;
-  max-width: 1400px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-  max-height: calc(100vh - 280px);
-  transform-origin: center center;
-}
-
-.board-outer-bezel {
-  background: #000;
-  border: 4px solid var(--border-arcade);
-  padding: 12px 16px;
-  box-shadow: 0 0 32px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 0, 0, 0.95);
-  width: 100%;
-  height: 100%;
+/* Left Column: Tetris Board & Next Piece */
+.arcade-board-column {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 14px;
+}
+
+.tetris-board-frame {
+  background: #000;
+  border: 4px solid var(--border-arcade);
+  padding: 14px;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.8), inset 0 0 16px rgba(0, 0, 0, 0.9);
 }
 
 .board-top-marquee {
@@ -568,166 +502,334 @@ body {
   font-size: 8px;
   color: var(--tetris-cyan);
   border-bottom: 2px dashed var(--border-arcade);
-  padding-bottom: 6px;
-  margin-bottom: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
 }
 
-.tetris-matrix-wrap {
+.tetris-grid-container {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  justify-content: center;
 }
 
-.matrix-col-headers {
+.grid-col-headers {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 6px;
+  gap: 4px;
   margin-bottom: 6px;
 }
 
-.col-marker {
+.col-header-cell {
   text-align: center;
   font-size: 8px;
   color: var(--text-dim);
 }
 
-.matrix-viewport {
+/* Pure Square Cells */
+.grid-matrix-body.square-cells {
   display: grid;
   grid-template-rows: repeat(8, 1fr);
-  gap: 5px;
+  gap: 4px;
   background: #080911;
-  padding: 8px;
+  padding: 6px;
   border: 2px solid var(--border-arcade);
-  flex: 1;
-  align-content: stretch;
 }
 
-.matrix-row {
+.grid-matrix-row {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 5px;
-  align-items: stretch;
+  gap: 4px;
 }
 
-.matrix-cell {
-  min-height: clamp(34px, calc((100vh - 380px) / 8), 64px);
+.grid-cell-slot {
+  aspect-ratio: 1 / 1;
+  width: 100%;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  cursor: pointer;
   transition: all 0.15s;
 }
 
-.matrix-cell.is-hovered {
-  border-color: var(--text-bright);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
-  z-index: 20;
+.grid-cell-slot.cell-landed.is-clickable {
+  cursor: pointer;
 }
 
-.matrix-cell-empty-dot {
+.grid-cell-slot.cell-landed.is-clickable:hover {
+  filter: brightness(1.3);
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.grid-cell-slot.cell-falling {
+  cursor: default;
+}
+
+/* Line Clear Flash Animation */
+.grid-cell-slot.row-clearing-flash {
+  animation: lineFlash 0.3s infinite alternate;
+}
+
+@keyframes lineFlash {
+  0% {
+    background: #ffffff;
+    box-shadow: 0 0 12px #fff;
+  }
+  100% {
+    background: var(--tetris-yellow);
+    box-shadow: 0 0 20px var(--tetris-yellow);
+  }
+}
+
+.empty-cell-dot {
   width: 4px;
   height: 4px;
   background: rgba(255, 255, 255, 0.1);
 }
 
-.cell-fall-wrapper {
-  width: 100%;
-  height: 100%;
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
-}
-
-.cell-fall-wrapper.falling {
-  transform: translateY(-60px);
-  opacity: 0.15;
-}
-
-.cell-fall-wrapper.landed {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.board-solved-banner {
-  margin-top: 10px;
-  background: linear-gradient(90deg, #aa3bff, #00f0f0);
-  color: #000;
-  padding: 10px;
+.board-sub-note {
   text-align: center;
-  border: 2px solid #fff;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  animation: bannerGlow 1s infinite alternate;
+  font-size: 7px;
+  color: var(--text-dim);
+  margin-top: 10px;
 }
 
-@keyframes bannerGlow {
-  0% { box-shadow: 0 0 10px rgba(0, 240, 240, 0.6); }
-  100% { box-shadow: 0 0 24px rgba(170, 59, 255, 0.9); }
-}
-
-.solved-flash {
-  font-size: 11px;
-  font-weight: bold;
-}
-
-.solved-bonus {
-  font-size: 8px;
-}
-
-/* Quick Selector Roster of 8 Projects */
-.projects-quick-selector {
-  width: 100%;
-  max-width: 1400px;
+/* Next Piece Preview Box */
+.next-piece-box {
+  background: #000;
+  border: 3px solid var(--border-arcade);
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: #000;
-  border: 2px solid var(--border-arcade);
-  padding: 10px 14px;
+  align-items: center;
 }
 
-.selector-label {
+.next-header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
   font-size: 8px;
+}
+
+.next-title {
   color: var(--tetris-yellow);
 }
 
-.selector-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.next-type {
+  font-weight: bold;
 }
 
-.project-pill-btn {
-  font-family: var(--pixel-font);
-  font-size: 8px;
-  background: #141624;
-  color: var(--text-bright);
-  border: 2px solid var(--border-arcade);
-  border-left: 5px solid;
-  padding: 5px 10px;
-  cursor: pointer;
+.next-matrix-grid {
+  display: grid;
+  gap: 3px;
+  background: #080911;
+  padding: 6px;
+  border: 1px solid var(--border-arcade);
+}
+
+.next-cell-slot {
+  width: 20px;
+  height: 20px;
+  aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.15s;
+  justify-content: center;
 }
 
-.project-pill-btn:hover,
-.project-pill-btn.active {
-  background: #23273e;
+.next-empty-dot {
+  width: 3px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.next-project-label {
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.next-matrix-empty {
+  font-size: 8px;
+  color: var(--text-dim);
+  padding: 10px;
+}
+
+/* Right Column: Normal Divs List (Cleared / Destroyed Projects) */
+.arcade-queue-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border-arcade);
+  padding-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.queue-title {
+  font-size: 11px;
+  color: var(--tetris-yellow);
+}
+
+.queue-sub {
+  font-size: 8px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.unlocked-counter-badge {
+  background: #141726;
+  border: 1px solid var(--border-glow);
+  padding: 4px 8px;
+  font-size: 8px;
+  color: var(--tetris-green);
+}
+
+.project-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 640px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Project Normal Div */
+.project-normal-div {
+  background: var(--bg-card);
+  border: 2px solid var(--border-arcade);
+  border-left: 5px solid;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.project-normal-div.is-unlocked-div {
+  background: #181a2c;
+  border-color: #3b3f61;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.project-normal-div.is-unlocked-div:hover {
   border-color: var(--text-bright);
-  transform: translateY(-2px);
+  transform: translateX(4px);
 }
 
-.pill-dot {
-  width: 6px;
-  height: 6px;
+.project-normal-div.is-pending-div {
+  opacity: 0.65;
+  background: #0f101a;
 }
 
-.pill-ext {
+.pnd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pnd-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pnd-pill {
+  color: #000;
+  font-size: 7px;
+  font-weight: bold;
+  padding: 2px 6px;
+}
+
+.pnd-title {
+  font-size: 11px;
+}
+
+.badge-cleared {
+  color: var(--tetris-green);
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.badge-board {
+  color: var(--tetris-yellow);
+  font-size: 8px;
+}
+
+.badge-falling {
+  color: var(--tetris-cyan);
+  font-size: 8px;
+  animation: blink 0.8s infinite step-start;
+}
+
+.badge-locked {
+  color: var(--text-dim);
+  font-size: 8px;
+}
+
+.pnd-unlocked-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px dashed var(--border-arcade);
+  padding-top: 8px;
+}
+
+.pnd-tagline {
+  font-size: 9px;
+  color: var(--text-bright);
+}
+
+.pnd-desc {
+  font-size: 9px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.pnd-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mini-tag {
+  font-size: 7px;
+  background: #0a0b12;
+  color: var(--tetris-cyan);
+  padding: 2px 6px;
+  border: 1px solid var(--border-arcade);
+}
+
+.pnd-actions-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.pnd-locked-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pnd-lock-notice {
+  font-size: 8px;
+  color: var(--text-dim);
+}
+
+.notice-board {
+  color: var(--tetris-yellow);
+}
+
+.notice-queue {
   color: var(--text-dim);
 }
 
@@ -749,7 +851,7 @@ body {
   background: var(--bg-surface);
   border: 4px solid var(--border-glow);
   box-shadow: 0 0 36px rgba(170, 59, 255, 0.5), inset 0 0 16px rgba(0, 0, 0, 0.8);
-  width: 680px;
+  width: 640px;
   max-width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -1040,42 +1142,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 24px 32px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.arcade-cabinet-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  border-bottom: 3px solid var(--border-arcade);
-  padding-bottom: 20px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.arcade-sub {
-  display: block;
-  font-size: 9px;
-  color: var(--border-glow);
-  margin-bottom: 8px;
-}
-
-.arcade-main-title {
-  font-size: 26px;
-  color: var(--text-bright);
-  line-height: 1.3;
-  margin-bottom: 10px;
-}
-
-.title-lab { color: var(--tetris-yellow); }
-.title-docs { color: var(--border-glow); }
-
-.arcade-instruction {
-  font-size: 10px;
-  color: var(--text-dim);
 }
 
 .tumbling-canvas-container {
@@ -1313,9 +1379,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 28px;
-  padding: 24px 32px;
-  max-width: 1400px;
-  margin: 0 auto;
 }
 
 .ph-launch-card {
@@ -1720,7 +1783,8 @@ body {
   gap: 16px;
   font-size: 9px;
   color: var(--text-dim);
-  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .footer-coin-slot {

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import type { ProjectItem } from '../../types';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import type { ProjectItem, GridCell } from '../../types';
 import { PROJECTS, TETRIS_COLS, TETRIS_ROWS } from '../../utils/constants';
 import { TetrisBlock } from './TetrisBlock';
+import { NextPieceBox } from './NextPieceBox';
 import { ProjectModal } from './ProjectModal';
 import { sfx } from '../../utils/sfx';
 
@@ -9,279 +10,421 @@ interface TetrisSectionProps {
   onScoreChange?: (score: number) => void;
 }
 
+interface LandedPiece {
+  project: ProjectItem;
+  cells: GridCell[];
+  isDestroyed: boolean;
+}
+
 export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) => {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [landedCount, setLandedCount] = useState<number>(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Active game state
+  const [currentProjectIndex, setCurrentProjectIndex] = useState<number>(0);
+  const [motionStep, setMotionStep] = useState<number>(0); // 0 to 4
+  const [landedPieces, setLandedPieces] = useState<LandedPiece[]>([]);
+  const [clearedProjectIds, setClearedProjectIds] = useState<string[]>([]);
+  const [clearingRowIndices, setClearingRowIndices] = useState<number[]>([]);
   const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
   const [score, setScore] = useState<number>(0);
   const [lines, setLines] = useState<number>(0);
-  const [isSolved, setIsSolved] = useState<boolean>(false);
-  const [hoveredProjectId, setHoveredProjectId] = useState<string | null>(null);
-  const [zoomScale, setZoomScale] = useState<number>(1.08);
-  const [scrollPercent, setScrollPercent] = useState<number>(0);
+  const [isGameOver, setIsGameOver] = useState<boolean>(false);
+  const [autoPlay, setAutoPlay] = useState<boolean>(false);
 
-  const prevLandedRef = useRef<number>(0);
-  const totalProjects = PROJECTS.length; // 8 real projects
+  const totalProjects = PROJECTS.length;
+  const currentProject: ProjectItem | null =
+    currentProjectIndex < totalProjects ? PROJECTS[currentProjectIndex] : null;
+  const nextProject: ProjectItem | null =
+    currentProjectIndex + 1 < totalProjects ? PROJECTS[currentProjectIndex + 1] : null;
 
-  // Scroll detection within the sticky track
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!trackRef.current) return;
-      const rect = trackRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
+  // Calculate coordinates of the currently active falling piece based on motionStep (0 to 4)
+  // Step 0: Spawn at top (y: 0, 1), centered
+  // Step 1: Moves down (y: 2, 3)
+  // Step 2: Rotates / Turns (sfx.playRotate())
+  // Step 3: Shifts horizontally to target column
+  // Step 4: Lands in target resting position (sfx.playDrop())
+  const getActivePieceCells = useCallback((): GridCell[] => {
+    if (!currentProject) return [];
 
-      // Track height minus sticky viewport height
-      const scrollableDistance = rect.height - windowHeight;
-      if (scrollableDistance <= 0) return;
+    const finalCells = currentProject.solvedCells;
+    const finalMinX = Math.min(...finalCells.map((c) => c.x));
+    const finalMinY = Math.min(...finalCells.map((c) => c.y));
 
-      // Current scrolled distance through this track
-      const scrolled = -rect.top;
-      const progress = Math.min(1, Math.max(0, scrolled / scrollableDistance));
-      setScrollPercent(Math.round(progress * 100));
+    // Normalized relative offsets from (0,0)
+    const relCells = finalCells.map((c) => ({
+      x: c.x - finalMinX,
+      y: c.y - finalMinY
+    }));
 
-      // Calculate how many pieces should be landed
-      const targetCount = Math.min(totalProjects, Math.floor(progress * (totalProjects + 0.99)));
-      if (targetCount !== landedCount) {
-        setLandedCount(targetCount);
+    if (motionStep === 0) {
+      // Top center
+      const spawnX = Math.max(0, Math.floor((TETRIS_COLS - 3) / 2));
+      return relCells.map((c) => ({ x: spawnX + c.x, y: c.y }));
+    } else if (motionStep === 1) {
+      // Down two rows
+      const spawnX = Math.max(0, Math.floor((TETRIS_COLS - 3) / 2));
+      return relCells.map((c) => ({ x: spawnX + c.x, y: c.y + 2 }));
+    } else if (motionStep === 2) {
+      // Rotated / turned state
+      const targetMidX = Math.round((finalMinX + 1) / 2);
+      return relCells.map((c) => ({
+        // Predetermined turn: swap x & y delta for visual rotation
+        x: Math.min(TETRIS_COLS - 1, Math.max(0, targetMidX + c.y)),
+        y: Math.min(TETRIS_ROWS - 1, c.x + 3)
+      }));
+    } else if (motionStep === 3) {
+      // Shifted horizontally above target column
+      return relCells.map((c) => ({
+        x: finalMinX + c.x,
+        y: Math.max(0, finalMinY - 2 + c.y)
+      }));
+    } else {
+      // Step 4: Final resting landing cells
+      return finalCells;
+    }
+  }, [currentProject, motionStep]);
+
+  // Advance game by 1 step (driven by mouse wheel, keydown, or button)
+  const advanceStep = useCallback(() => {
+    if (isGameOver || !currentProject) return;
+
+    if (motionStep < 3) {
+      // Intermediate falling & turning steps
+      const nextStep = motionStep + 1;
+      setMotionStep(nextStep);
+      if (nextStep === 2 || nextStep === 3) {
+        sfx.playRotate();
       }
-
-      // Dynamic zoom-out calculation:
-      // Starts slightly zoomed in (1.08x), smoothly pulls back to 0.96x as the matrix gets full
-      const currentZoom = 1.08 - progress * 0.12;
-      setZoomScale(currentZoom);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [totalProjects, landedCount]);
-
-  // Handle score, lines, and audio effects on pieces landing
-  useEffect(() => {
-    if (landedCount > prevLandedRef.current) {
+    } else if (motionStep === 3) {
+      // Piece LANDS in resting slot
       sfx.playDrop();
+      setMotionStep(4);
 
-      let addedScore = 0;
-      for (let i = prevLandedRef.current; i < landedCount; i++) {
-        addedScore += PROJECTS[i]?.points || 1500;
-      }
+      const landedCells = currentProject.solvedCells;
+      const newLandedPiece: LandedPiece = {
+        project: currentProject,
+        cells: landedCells,
+        isDestroyed: false
+      };
 
+      const updatedLanded = [...landedPieces, newLandedPiece];
+      setLandedPieces(updatedLanded);
+
+      // Score for piece drop
+      const piecePoints = currentProject.points || 1500;
       setScore((prev) => {
-        const nextScore = prev + addedScore;
+        const nextScore = prev + piecePoints;
         onScoreChange?.(nextScore);
         return nextScore;
       });
 
-      setLines(Math.floor((landedCount / totalProjects) * TETRIS_ROWS));
-
-      if (landedCount === totalProjects && !isSolved) {
-        setIsSolved(true);
-        sfx.playLineClear();
-        setScore((prev) => {
-          const finalBonus = prev + 10000;
-          onScoreChange?.(finalBonus);
-          return finalBonus;
-        });
+      // Check if rows are now completely filled across all 6 columns
+      // Check each row from 0 to TETRIS_ROWS - 1
+      const filledRowIndices: number[] = [];
+      for (let r = 0; r < TETRIS_ROWS; r++) {
+        // Collect all non-destroyed landed cells in row r
+        const cellsInRow = updatedLanded.flatMap((p) =>
+          p.isDestroyed ? [] : p.cells.filter((c) => c.y === r)
+        );
+        // All 6 columns filled?
+        const uniqueCols = new Set(cellsInRow.map((c) => c.x));
+        if (uniqueCols.size >= TETRIS_COLS) {
+          filledRowIndices.push(r);
+        }
       }
-    } else if (landedCount < prevLandedRef.current) {
-      setIsSolved(false);
+
+      if (filledRowIndices.length > 0) {
+        // LINE CLEAR!
+        setClearingRowIndices(filledRowIndices);
+        sfx.playLineClear();
+
+        setLines((prev) => prev + filledRowIndices.length);
+        setScore((prev) => {
+          const bonus = prev + filledRowIndices.length * 3000;
+          onScoreChange?.(bonus);
+          return bonus;
+        });
+
+        // Identify which projects have blocks in these completed lines
+        const projectsInCompletedRows = updatedLanded
+          .filter((p) => p.cells.some((c) => filledRowIndices.includes(c.y)))
+          .map((p) => p.project.id);
+
+        setTimeout(() => {
+          // Mark completed lines as destroyed & unlock project into normal divs
+          setLandedPieces((prev) =>
+            prev.map((p) =>
+              projectsInCompletedRows.includes(p.project.id)
+                ? { ...p, isDestroyed: true }
+                : p
+            )
+          );
+          setClearedProjectIds((prev) => [
+            ...new Set([...prev, ...projectsInCompletedRows])
+          ]);
+          setClearingRowIndices([]);
+        }, 650);
+      }
+
+      // Prepare next project
+      setTimeout(() => {
+        if (currentProjectIndex + 1 < totalProjects) {
+          setCurrentProjectIndex((prev) => prev + 1);
+          setMotionStep(0);
+        } else {
+          setIsGameOver(true);
+          sfx.playLineClear();
+        }
+      }, 500);
     }
-    prevLandedRef.current = landedCount;
-  }, [landedCount, totalProjects, isSolved, onScoreChange]);
+  }, [
+    isGameOver,
+    currentProject,
+    motionStep,
+    landedPieces,
+    currentProjectIndex,
+    totalProjects,
+    onScoreChange
+  ]);
 
-  const handleManualDropAll = () => {
-    sfx.playCoin();
-    setLandedCount(totalProjects);
-    setZoomScale(0.96);
-    setScrollPercent(100);
-  };
-
-  const handleManualStepDrop = () => {
-    if (landedCount < totalProjects) {
+  // Step backwards (for undo / rewind)
+  const stepBack = useCallback(() => {
+    if (motionStep > 0) {
       sfx.playRotate();
-      setLandedCount((prev) => {
-        const next = Math.min(totalProjects, prev + 1);
-        setZoomScale(1.08 - (next / totalProjects) * 0.12);
-        return next;
-      });
+      setMotionStep((prev) => prev - 1);
     }
-  };
+  }, [motionStep]);
 
-  const handleResetBoard = () => {
+  // Auto-play interval
+  useEffect(() => {
+    if (!autoPlay || isGameOver) return;
+    const interval = window.setInterval(() => {
+      advanceStep();
+    }, 450);
+    return () => clearInterval(interval);
+  }, [autoPlay, isGameOver, advanceStep]);
+
+  // Scroll interception: Scrolling advances block down (no window scrolling)
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let wheelAccum = 0;
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      wheelAccum += e.deltaY;
+
+      // Every 30px of scroll delta advances 1 step
+      if (wheelAccum > 28) {
+        advanceStep();
+        wheelAccum = 0;
+      } else if (wheelAccum < -28) {
+        stepBack();
+        wheelAccum = 0;
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [advanceStep, stepBack]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault();
+        advanceStep();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        stepBack();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [advanceStep, stepBack]);
+
+  const handleResetGame = () => {
     sfx.playBeep();
-    setLandedCount(0);
+    setCurrentProjectIndex(0);
+    setMotionStep(0);
+    setLandedPieces([]);
+    setClearedProjectIds([]);
+    setClearingRowIndices([]);
     setScore(0);
     setLines(0);
-    setIsSolved(false);
-    setZoomScale(1.08);
-    setScrollPercent(0);
-    prevLandedRef.current = 0;
+    setIsGameOver(false);
+    setAutoPlay(false);
     onScoreChange?.(0);
   };
 
   // Build grid map for the 6x8 board
-  const gridState: { project: ProjectItem | null; isLanded: boolean }[][] = Array.from(
-    { length: TETRIS_ROWS },
-    () => Array.from({ length: TETRIS_COLS }, () => ({ project: null, isLanded: false }))
+  // Each cell: { project, isLanded, isFalling, isClearedRow }
+  const activeCells = motionStep < 4 ? getActivePieceCells() : [];
+
+  const gridMatrix: {
+    project: ProjectItem | null;
+    isLanded: boolean;
+    isFalling: boolean;
+    isClearedRow: boolean;
+  }[][] = Array.from({ length: TETRIS_ROWS }, (_, y) =>
+    Array.from({ length: TETRIS_COLS }, (_, x) => {
+      const isClearedRow = clearingRowIndices.includes(y);
+
+      // Check if active falling piece occupies (x, y)
+      const isActive = activeCells.some((c) => c.x === x && c.y === y);
+      if (isActive && currentProject) {
+        return {
+          project: currentProject,
+          isLanded: false,
+          isFalling: true,
+          isClearedRow
+        };
+      }
+
+      // Check if landed piece occupies (x, y)
+      for (const landed of landedPieces) {
+        if (!landed.isDestroyed && landed.cells.some((c) => c.x === x && c.y === y)) {
+          return {
+            project: landed.project,
+            isLanded: true,
+            isFalling: false,
+            isClearedRow
+          };
+        }
+      }
+
+      return {
+        project: null,
+        isLanded: false,
+        isFalling: false,
+        isClearedRow
+      };
+    })
   );
 
-  PROJECTS.forEach((project, index) => {
-    const isLanded = index < landedCount;
-    project.solvedCells.forEach((cell) => {
-      if (cell.y >= 0 && cell.y < TETRIS_ROWS && cell.x >= 0 && cell.x < TETRIS_COLS) {
-        gridState[cell.y][cell.x] = { project, isLanded };
-      }
-    });
-  });
-
-  const activeHoverProject = PROJECTS.find((p) => p.id === hoveredProjectId);
-
   return (
-    <div ref={trackRef} className="tetris-sticky-track" id="projects-arcade">
-      {/* Pinned Sticky Stage: Stays centered in viewport as you scroll */}
-      <div className="tetris-sticky-stage">
-        {/* HUD Info Header */}
-        <div className="tetris-hud-bar">
+    <div ref={containerRef} className="tetris-arcade-layout-wrapper" id="projects-arcade">
+      {/* Top Arcade HUD Header */}
+      <div className="arcade-cabinet-header">
+        <div className="arcade-title-box">
+          <span className="arcade-sub">STAGE 01 // INTERACTIVE TETRIS MATRIX</span>
+          <h2 className="arcade-main-title">
+            <span className="title-tetris">TETRIS</span> REPOSITORY ENGINE
+          </h2>
+          <p className="arcade-instruction">
+            SCROLL DOWN WITH MOUSE WHEEL TO ADVANCE BLOCKS • FILL A LINE TO DESTROY BLOCK & UNLOCK REPOSITORY
+          </p>
+        </div>
+
+        {/* HUD Score Panel */}
+        <div className="arcade-hud-panel">
           <div className="hud-metric">
             <span className="hud-label">SCORE</span>
             <span className="hud-value hud-score">{score.toString().padStart(6, '0')}</span>
           </div>
           <div className="hud-metric">
-            <span className="hud-label">PROJECTS LANDED</span>
-            <span className="hud-value">{landedCount} / {totalProjects}</span>
+            <span className="hud-label">LINES</span>
+            <span className="hud-value hud-lines">{lines}</span>
           </div>
           <div className="hud-metric">
-            <span className="hud-label">SOLVED ROWS</span>
-            <span className="hud-value hud-lines">{lines} / {TETRIS_ROWS}</span>
+            <span className="hud-label">UNLOCKED</span>
+            <span className="hud-value hud-unlocked">
+              {clearedProjectIds.length} / {totalProjects}
+            </span>
           </div>
           <div className="hud-metric">
-            <span className="hud-label">SCROLL PROGRESS</span>
-            <span className="hud-value hud-progress">{scrollPercent}%</span>
-          </div>
-          <div className="hud-metric">
-            <span className="hud-label">ZOOM CAM</span>
-            <span className="hud-value hud-zoom">{Math.round(zoomScale * 100)}%</span>
-          </div>
-          <div className="hud-metric">
-            <span className="hud-label">MATRIX STATUS</span>
-            <span className={`hud-value ${isSolved ? 'hud-solved' : 'hud-active'}`}>
-              {isSolved ? '★ 100% SOLVED ★' : 'FALLING...'}
+            <span className="hud-label">STATUS</span>
+            <span className={`hud-value ${isGameOver ? 'hud-solved' : 'hud-active'}`}>
+              {isGameOver ? '★ COMPLETED ★' : 'IN PLAY'}
             </span>
           </div>
         </div>
+      </div>
 
-        {/* Control Buttons & Scroll Hint */}
-        <div className="tetris-control-bar">
-          <button
-            className="retro-btn btn-sm"
-            onClick={handleManualStepDrop}
-            disabled={landedCount >= totalProjects}
-          >
-            <span>▼ STEP DROP</span>
-          </button>
-          <button
-            className="retro-btn btn-sm btn-primary"
-            onClick={handleManualDropAll}
-            disabled={landedCount >= totalProjects}
-          >
-            <span>⚡ DROP ALL PIECES</span>
-          </button>
-          <button className="retro-btn btn-sm btn-outline" onClick={handleResetBoard}>
-            <span>↺ RESET BOARD</span>
-          </button>
-
-          <div className="scroll-indicator-pill">
-            <span className="scroll-pulse-icon">↕</span>
-            <span className="scroll-text">
-              {landedCount < totalProjects
-                ? 'SCROLL DOWN TO DROP BLOCKS (STAGE STAYS PINNED)'
-                : 'MATRIX COMPLETE! KEEP SCROLLING FOR LAB & TOOLS'}
-            </span>
-          </div>
-        </div>
-
-        {/* Project Hover Inspector Banner */}
-        <div className="project-inspector-banner">
-          {activeHoverProject ? (
-            <div className="inspector-content" style={{ borderColor: activeHoverProject.color }}>
-              <span className="inspector-dot" style={{ backgroundColor: activeHoverProject.color }} />
-              <span className="inspector-title" style={{ color: activeHoverProject.color }}>
-                {activeHoverProject.title}
-              </span>
-              <span className="inspector-divider">//</span>
-              <span className="inspector-tagline">{activeHoverProject.tagline}</span>
-              <span className="inspector-hint">▶ CLICK BLOCK TO OPEN DETAILS & REPO</span>
-            </div>
-          ) : (
-            <div className="inspector-placeholder">
-              <span>▼ HOVER & CLICK ANY TETRIS BLOCK TO INSPECT REPOSITORY DETAILS ▼</span>
-            </div>
-          )}
-        </div>
-
-        {/* Full-Width Screen-Dominant Tetris Board with Dynamic Zoom */}
-        <div
-          className="tetris-fullscreen-board-container"
-          style={{
-            transform: `scale(${zoomScale})`,
-            transition: 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)'
+      {/* Control Action Buttons */}
+      <div className="arcade-controls-bar">
+        <button
+          className="retro-btn btn-sm btn-primary"
+          onClick={advanceStep}
+          disabled={isGameOver}
+          title="Scroll mouse wheel down or click to advance"
+        >
+          <span>▼ ADVANCE (OR SCROLL)</span>
+        </button>
+        <button
+          className={`retro-btn btn-sm ${autoPlay ? 'btn-active' : ''}`}
+          onClick={() => {
+            sfx.playBeep();
+            setAutoPlay((prev) => !prev);
           }}
         >
-          <div className="board-outer-bezel">
+          <span>{autoPlay ? '⏸ PAUSE' : '▶ AUTO PLAY'}</span>
+        </button>
+        <button className="retro-btn btn-sm btn-outline" onClick={handleResetGame}>
+          <span>↺ RESET GAME</span>
+        </button>
+        <div className="scroll-hint-tag">
+          <span>↕ WHEEL SCROLL ADVANCES BLOCK</span>
+        </div>
+      </div>
+
+      {/* The Restored 2-Column Layout */}
+      <div className="arcade-arena-grid">
+        {/* LEFT COLUMN: The 6-Column Square Tetris Board + Next Piece */}
+        <div className="arcade-board-column">
+          <div className="tetris-board-frame">
             <div className="board-top-marquee">
-              <span>● 6-COLUMN FULLSCREEN MATRIX // CLANCY DESILVA REPOSITORIES ●</span>
+              <span>● 6-COLUMN SQUARE MATRIX ●</span>
             </div>
 
-            <div className="tetris-matrix-wrap">
-              {/* Column coordinate markers */}
-              <div className="matrix-col-headers">
+            <div className="tetris-grid-container">
+              {/* Matrix Columns 01 - 06 */}
+              <div className="grid-col-headers">
                 {Array.from({ length: TETRIS_COLS }).map((_, c) => (
-                  <div key={c} className="col-marker">
-                    COL-0{c + 1}
+                  <div key={c} className="col-header-cell">
+                    0{c + 1}
                   </div>
                 ))}
               </div>
 
-              {/* Matrix rows and cells */}
-              <div className="matrix-viewport">
-                {gridState.map((row, y) => (
-                  <div key={y} className="matrix-row">
+              {/* Pure Square Matrix Grid */}
+              <div className="grid-matrix-body square-cells">
+                {gridMatrix.map((row, y) => (
+                  <div key={y} className="grid-matrix-row">
                     {row.map((cell, x) => {
-                      const isHovered =
-                        cell.project && cell.project.id === hoveredProjectId;
+                      const canClick = cell.project && cell.isLanded;
 
                       return (
                         <div
                           key={x}
-                          className={`matrix-cell ${cell.project ? 'has-piece' : ''} ${
-                            cell.isLanded ? 'is-landed' : 'is-empty'
-                          } ${isHovered ? 'is-hovered' : ''}`}
+                          className={`grid-cell-slot ${cell.project ? 'has-piece' : ''} ${
+                            cell.isLanded ? 'cell-landed is-clickable' : ''
+                          } ${cell.isFalling ? 'cell-falling' : ''} ${
+                            cell.isClearedRow ? 'row-clearing-flash' : ''
+                          }`}
                           onClick={() => {
-                            if (cell.project) {
+                            // Block is ONLY clickable when it has stopped moving (isLanded)
+                            if (canClick && cell.project) {
                               setSelectedProject(cell.project);
                             }
                           }}
-                          onMouseEnter={() => {
-                            if (cell.project) setHoveredProjectId(cell.project.id);
-                          }}
-                          onMouseLeave={() => setHoveredProjectId(null)}
+                          title={
+                            canClick
+                              ? `${cell.project?.title} (Click to inspect details)`
+                              : cell.isFalling
+                              ? 'Moving... (Clickable when stopped)'
+                              : undefined
+                          }
                         >
                           {cell.project ? (
-                            <div
-                              className={`cell-fall-wrapper ${
-                                cell.isLanded ? 'landed' : 'falling'
-                              }`}
-                            >
-                              <TetrisBlock
-                                color={cell.project.color}
-                                size="100%"
-                                isGhost={!cell.isLanded}
-                                isSolved={isSolved}
-                                label={cell.isLanded ? cell.project.title.slice(0, 4) : ''}
-                              />
-                            </div>
+                            <TetrisBlock
+                              color={cell.project.color}
+                              size="100%"
+                              isGhost={cell.isFalling}
+                              label={cell.isLanded ? cell.project.title.slice(0, 3) : ''}
+                            />
                           ) : (
-                            <div className="matrix-cell-empty-dot" />
+                            <div className="empty-cell-dot" />
                           )}
                         </div>
                       );
@@ -291,45 +434,121 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
               </div>
             </div>
 
-            {/* Solved celebration banner */}
-            {isSolved && (
-              <div className="board-solved-banner">
-                <span className="solved-flash">★ ALL 8 REPOSITORIES SOLVED & LOCKED IN! ★</span>
-                <span className="solved-bonus">+10,000 PTS BONUS AWARDED // CLICK ANY BLOCK FOR CODE</span>
-              </div>
-            )}
+            <div className="board-sub-note">
+              <span>★ BLOCKS ARE ONLY CLICKABLE ONCE STOPPED ★</span>
+            </div>
           </div>
+
+          {/* NEXT PIECE PREVIEW BOX */}
+          <NextPieceBox nextProject={nextProject} />
         </div>
 
-        {/* Quick-Pill Bar for 8 Projects */}
-        <div className="projects-quick-selector">
-          <div className="selector-label">
-            <span>REPOSITORY QUICK SELECTOR:</span>
+        {/* RIGHT COLUMN: The Normal Divs (Cleared Projects & Queue) */}
+        <div className="arcade-queue-sidebar">
+          <div className="queue-header">
+            <div>
+              <span className="queue-title">CLEARED REPOSITORIES</span>
+              <p className="queue-sub">
+                FILL A ROW IN TETRIS TO DESTROY BLOCKS & UNLOCK NORMAL PROJECT SECTIONS
+              </p>
+            </div>
+            <span className="unlocked-counter-badge">
+              {clearedProjectIds.length} / {totalProjects} UNLOCKED
+            </span>
           </div>
-          <div className="selector-pills">
-            {PROJECTS.map((project, idx) => {
-              const isLanded = idx < landedCount;
-              const isHovered = hoveredProjectId === project.id;
+
+          <div className="project-queue-list">
+            {PROJECTS.map((project) => {
+              const isCleared = clearedProjectIds.includes(project.id);
+              const isLandedOnBoard = landedPieces.some(
+                (p) => p.project.id === project.id && !p.isDestroyed
+              );
+              const isCurrentlyFalling = currentProject?.id === project.id;
 
               return (
-                <button
+                <div
                   key={project.id}
-                  type="button"
-                  className={`project-pill-btn ${isLanded ? 'landed' : 'pending'} ${
-                    isHovered ? 'active' : ''
+                  className={`project-normal-div ${
+                    isCleared ? 'is-unlocked-div' : 'is-pending-div'
                   }`}
-                  style={{
-                    borderLeftColor: project.color,
-                    boxShadow: isHovered ? `0 0 12px ${project.color}` : 'none'
-                  }}
-                  onClick={() => setSelectedProject(project)}
-                  onMouseEnter={() => setHoveredProjectId(project.id)}
-                  onMouseLeave={() => setHoveredProjectId(null)}
+                  style={{ borderLeftColor: project.color }}
                 >
-                  <span className="pill-dot" style={{ backgroundColor: project.color }} />
-                  <span className="pill-title">{project.title}</span>
-                  <span className="pill-ext">↗</span>
-                </button>
+                  {/* Div Header */}
+                  <div className="pnd-header">
+                    <div className="pnd-title-group">
+                      <span className="pnd-pill" style={{ backgroundColor: project.color }}>
+                        {project.type}-PIECE
+                      </span>
+                      <h4 className="pnd-title" style={{ color: project.color }}>
+                        {project.title}
+                      </h4>
+                    </div>
+
+                    <div className="pnd-status-badge">
+                      {isCleared ? (
+                        <span className="badge-cleared">★ UNLOCKED ★</span>
+                      ) : isLandedOnBoard ? (
+                        <span className="badge-board">ON BOARD (CLICK BLOCK)</span>
+                      ) : isCurrentlyFalling ? (
+                        <span className="badge-falling">FALLING...</span>
+                      ) : (
+                        <span className="badge-locked">🔒 IN QUEUE</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Div Body: Description and Details */}
+                  {isCleared ? (
+                    // Unlocked normal div with full clickable section
+                    <div className="pnd-unlocked-body">
+                      <p className="pnd-tagline">{project.tagline}</p>
+                      <p className="pnd-desc">{project.description}</p>
+
+                      <div className="pnd-tags-row">
+                        {project.tags.map((t, ti) => (
+                          <span key={ti} className="mini-tag">
+                            #{t}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="pnd-actions-row">
+                        <a
+                          href={project.githubUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="retro-btn btn-xs btn-primary"
+                          onClick={() => sfx.playCoin()}
+                        >
+                          <span>GITHUB REPO</span> ↗
+                        </a>
+                        <button
+                          type="button"
+                          className="retro-btn btn-xs btn-outline"
+                          onClick={() => setSelectedProject(project)}
+                        >
+                          <span>INSPECT</span> 🔍
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Not cleared yet: Notice that the only link is on the block itself
+                    <div className="pnd-locked-body">
+                      <p className="pnd-tagline">{project.tagline}</p>
+                      <div className="pnd-lock-notice">
+                        {isLandedOnBoard ? (
+                          <span className="notice-board">
+                            ▶ Block has landed on matrix! Click the block directly to inspect.
+                          </span>
+                        ) : (
+                          <span className="notice-queue">
+                            ▶ Advance block & fill line to destroy piece and unlock full details here.
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
