@@ -2,11 +2,9 @@ import { useState } from 'react';
 import type { PageView } from './types';
 import { sfx } from './utils/sfx';
 import { ScanlineOverlay } from './components/ScanlineOverlay';
-import { SkillsTicker } from './components/SkillsTicker';
 import { Navbar } from './components/Navbar';
 import { TetrisSection } from './components/TetrisBoard/TetrisSection';
 import { IdeaLabSection } from './components/IdeaLab/IdeaLabSection';
-import { LeaderboardSection } from './components/Leaderboard/LeaderboardSection';
 import { DocsLaunchSection } from './components/DocsLaunch/DocsLaunchSection';
 import { GameOverScreen } from './components/GameOver/GameOverScreen';
 import { PacmanTransition } from './components/PacmanTransition/PacmanTransition';
@@ -51,10 +49,7 @@ export default function App() {
       {/* CRT Scanline & Phosphor Overlay */}
       <ScanlineOverlay enabled={crtEnabled} />
 
-      {/* Top Skills Marquee Ticker */}
-      <SkillsTicker />
-
-      {/* Arcade Bezel & Header HUD */}
+      {/* Arcade Header HUD with Large Centered Name */}
       <Navbar
         currentPage={currentPage}
         onNavigate={handleNavigate}
@@ -75,10 +70,6 @@ export default function App() {
           <IdeaLabSection onOpenDocs={() => handleNavigate('docs')} />
         )}
 
-        {currentPage === 'leaderboard' && (
-          <LeaderboardSection currentScore={score} />
-        )}
-
         {currentPage === 'docs' && (
           <DocsLaunchSection />
         )}
@@ -87,7 +78,7 @@ export default function App() {
           <GameOverScreen
             score={score}
             onContinue={() => handleNavigate('projects')}
-            onViewLeaderboard={() => handleNavigate('leaderboard')}
+            onViewLeaderboard={() => handleNavigate('projects')}
           />
         )}
       </main>

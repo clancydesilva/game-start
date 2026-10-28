@@ -1,27 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 :root {
-  --bg-deep: #0a0a10;
-  --bg-surface: #12131c;
-  --bg-card: #181926;
-  --border-arcade: #2d2f45;
+  --bg-deep: #08090f;
+  --bg-surface: #10121d;
+  --bg-card: #161826;
+  --border-arcade: #2a2c42;
   --border-glow: #aa3bff;
   --text-main: #e2e8f0;
-  --text-dim: #7e8299;
+  --text-dim: #797d96;
   --text-bright: #ffffff;
 
   /* Arcade Tetris Palette */
   --tetris-cyan: #00f0f0;
-  --tetris-yellow: #f0f000;
-  --tetris-purple: #a000f0;
-  --tetris-green: #00f000;
-  --tetris-red: #f00000;
-  --tetris-blue: #0000f0;
-  --tetris-orange: #f0a000;
+  --tetris-yellow: #facc15;
+  --tetris-purple: #c084fc;
+  --tetris-green: #4ade80;
+  --tetris-red: #f87171;
+  --tetris-blue: #38bdf8;
+  --tetris-orange: #fb923c;
+  --tetris-emerald: #34d399;
   --pacman-yellow: #ffde00;
 
   --pixel-font: 'Press Start 2P', monospace, system-ui;
-  --shadow-neon: 0 0 16px rgba(170, 59, 255, 0.35);
 }
 
 * {
@@ -34,7 +34,7 @@ body {
   background-color: var(--bg-deep);
   color: var(--text-main);
   font-family: var(--pixel-font);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.6;
   letter-spacing: 0.5px;
   overflow-x: hidden;
@@ -91,106 +91,40 @@ body {
 }
 
 /* =========================================================
-   TOP SKILLS MARQUEE TICKER
-========================================================= */
-.skills-ticker-wrapper {
-  display: flex;
-  align-items: center;
-  background: #000;
-  border-bottom: 2px solid var(--border-arcade);
-  height: 38px;
-  overflow: hidden;
-  position: sticky;
-  top: 0;
-  z-index: 900;
-}
-
-.ticker-label {
-  background: var(--border-glow);
-  color: #fff;
-  padding: 0 16px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  font-size: 10px;
-  white-space: nowrap;
-  font-weight: bold;
-  box-shadow: 2px 0 10px rgba(170, 59, 255, 0.5);
-  z-index: 10;
-}
-
-.blink-text {
-  animation: blink 0.8s infinite step-start;
-  margin-right: 6px;
-}
-
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-.ticker-track {
-  overflow: hidden;
-  white-space: nowrap;
-  flex: 1;
-}
-
-.ticker-content {
-  display: inline-flex;
-  animation: ticker-slide 32s linear infinite;
-}
-
-.ticker-content:hover {
-  animation-play-state: paused;
-}
-
-@keyframes ticker-slide {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-33.333%); }
-}
-
-.ticker-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 20px;
-  font-size: 10px;
-  color: var(--tetris-yellow);
-}
-
-.ticker-star {
-  color: var(--tetris-cyan);
-}
-
-.ticker-coin {
-  font-size: 12px;
-}
-
-/* =========================================================
-   ARCADE CABINET HUD NAVBAR
+   LARGE CENTERED TOP HEADER & NAVBAR
 ========================================================= */
 .arcade-navbar {
   background: var(--bg-surface);
   border-bottom: 4px solid var(--border-arcade);
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
 }
 
-.navbar-top-bezel {
+.navbar-hero-centerpiece {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 14px 20px;
+  justify-content: space-between;
+  padding: 24px 30px;
   border-bottom: 2px solid var(--border-arcade);
+  position: relative;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
 }
 
-.player-badge {
+.navbar-top-controls.left {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 11px;
+  min-width: 180px;
+}
+
+.arcade-credit-chip {
+  background: #000;
+  border: 2px solid var(--border-arcade);
+  padding: 6px 12px;
+  font-size: 9px;
+  color: var(--tetris-yellow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .blink-beacon {
@@ -198,47 +132,85 @@ body {
   animation: blink 0.8s infinite step-start;
 }
 
-.player-title {
-  color: var(--text-bright);
+@keyframes blink {
+  50% { opacity: 0; }
 }
 
-.player-coins {
-  background: #1e2030;
-  padding: 4px 8px;
-  border: 1px solid var(--border-arcade);
-  color: var(--tetris-yellow);
-  font-size: 9px;
+.navbar-name-group {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.arcade-large-name {
+  font-size: 38px;
+  letter-spacing: 2px;
+  color: #ffffff;
+  text-shadow: 
+    0 0 10px rgba(170, 59, 255, 0.8),
+    0 0 25px rgba(0, 240, 240, 0.6),
+    3px 3px 0px #000;
+  line-height: 1.2;
+}
+
+@media (max-width: 900px) {
+  .arcade-large-name {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 600px) {
+  .arcade-large-name {
+    font-size: 20px;
+  }
+}
+
+.arcade-subtitle {
+  font-size: 10px;
+  color: var(--tetris-cyan);
+  letter-spacing: 1px;
+}
+
+.navbar-top-controls.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 180px;
+  justify-content: flex-end;
 }
 
 .navbar-score-box {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   background: #000;
   border: 2px solid var(--border-arcade);
-  padding: 6px 16px;
+  padding: 6px 12px;
 }
 
 .hud-title {
   color: var(--tetris-red);
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .hud-number {
   color: var(--tetris-yellow);
-  font-size: 14px;
-  letter-spacing: 2px;
+  font-size: 13px;
+  letter-spacing: 1px;
 }
 
 .navbar-toggles {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .retro-toggle-btn {
   font-family: var(--pixel-font);
-  font-size: 9px;
-  padding: 6px 12px;
+  font-size: 8px;
+  padding: 6px 10px;
   background: #181926;
   color: var(--text-dim);
   border: 2px solid var(--border-arcade);
@@ -255,15 +227,16 @@ body {
 
 .navbar-nav-tabs {
   display: flex;
-  overflow-x: auto;
-  background: #090a10;
+  justify-content: center;
+  background: #0a0b12;
   border-bottom: 2px solid var(--border-arcade);
+  overflow-x: auto;
 }
 
 .nav-tab-btn {
   font-family: var(--pixel-font);
   font-size: 10px;
-  padding: 14px 18px;
+  padding: 14px 22px;
   background: transparent;
   color: var(--text-dim);
   border: none;
@@ -278,7 +251,7 @@ body {
 }
 
 .nav-tab-btn:hover {
-  background: rgba(170, 59, 255, 0.1);
+  background: rgba(170, 59, 255, 0.12);
   color: var(--text-bright);
 }
 
@@ -305,19 +278,21 @@ body {
   cursor: pointer;
   border: 2px solid #000;
   box-shadow: 
-    inset 4px 4px 0px rgba(255, 255, 255, 0.75),
+    inset 4px 4px 0px rgba(255, 255, 255, 0.8),
     inset -4px -4px 0px rgba(0, 0, 0, 0.65);
   transition: transform 0.15s, filter 0.15s;
+  width: 100%;
+  height: 100%;
 }
 
 .tetris-pixel-block:hover {
-  filter: brightness(1.2);
-  transform: scale(1.05);
-  z-index: 5;
+  filter: brightness(1.25);
+  transform: scale(1.04);
+  z-index: 10;
 }
 
 .tetris-pixel-block.is-ghost {
-  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border: 2px dashed rgba(255, 255, 255, 0.25);
   box-shadow: none;
 }
 
@@ -327,74 +302,50 @@ body {
 
 @keyframes pulseSolved {
   0% { filter: brightness(1); }
-  100% { filter: brightness(1.2) drop-shadow(0 0 4px rgba(255, 255, 255, 0.4)); }
+  100% { filter: brightness(1.2) drop-shadow(0 0 6px rgba(255, 255, 255, 0.5)); }
 }
 
 .block-label {
-  font-size: 8px;
+  font-size: 9px;
   color: #000;
   font-weight: bold;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 /* =========================================================
-   STAGE SECTION HEADERS
+   SCREEN-DOMINANT TETRIS SECTION
 ========================================================= */
 .arcade-cabinet-viewport {
   max-width: 1200px;
   margin: 0 auto;
-  min-height: calc(100vh - 160px);
-  padding: 30px 20px 60px;
+  min-height: calc(100vh - 180px);
+  padding: 24px 20px 60px;
 }
 
-.arcade-cabinet-header {
+.tetris-fullscreen-section {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  border-bottom: 3px solid var(--border-arcade);
-  padding-bottom: 20px;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
-  gap: 20px;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 16px;
 }
 
-.arcade-sub {
-  display: block;
-  font-size: 9px;
-  color: var(--border-glow);
-  margin-bottom: 8px;
-}
-
-.arcade-main-title {
-  font-size: 26px;
-  color: var(--text-bright);
-  line-height: 1.3;
-  margin-bottom: 10px;
-}
-
-.title-tetris { color: var(--tetris-cyan); }
-.title-lab { color: var(--tetris-yellow); }
-.title-lead { color: var(--tetris-green); }
-.title-docs { color: var(--border-glow); }
-
-.arcade-instruction {
-  font-size: 10px;
-  color: var(--text-dim);
-}
-
-/* HUD Panel */
-.arcade-hud-panel {
+.tetris-hud-bar {
   display: flex;
-  gap: 14px;
+  justify-content: center;
+  gap: 24px;
   background: #000;
-  border: 2px solid var(--border-arcade);
-  padding: 10px 16px;
+  border: 3px solid var(--border-arcade);
+  padding: 12px 24px;
+  width: 100%;
+  max-width: 820px;
   flex-wrap: wrap;
 }
 
 .hud-metric {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 4px;
 }
 
@@ -404,7 +355,7 @@ body {
 }
 
 .hud-value {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-bright);
 }
 
@@ -413,11 +364,9 @@ body {
 .hud-active { color: var(--tetris-orange); animation: blink 1s infinite step-start; }
 .hud-solved { color: var(--tetris-green); font-weight: bold; }
 
-/* Control Buttons Bar */
-.arcade-controls-bar {
+.tetris-control-bar {
   display: flex;
   gap: 12px;
-  margin-bottom: 24px;
 }
 
 /* Generic Retro Buttons */
@@ -467,20 +416,6 @@ body {
   font-size: 9px;
 }
 
-.retro-btn.btn-xs {
-  padding: 6px 10px;
-  font-size: 8px;
-}
-
-.retro-btn.btn-large {
-  padding: 14px 24px;
-  font-size: 13px;
-}
-
-.retro-btn.btn-block {
-  width: 100%;
-}
-
 .retro-btn.btn-primary {
   background: var(--border-glow);
   color: #fff;
@@ -506,31 +441,74 @@ body {
   cursor: pointer;
 }
 
-.btn-tiny:hover {
-  background: var(--tetris-cyan);
-  color: #000;
+/* Project Hover Inspector Banner */
+.project-inspector-banner {
+  width: 100%;
+  max-width: 820px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* =========================================================
-   TETRIS 6-COLUMN SOLVED BOARD LAYOUT
-========================================================= */
-.arcade-arena-grid {
-  display: grid;
-  grid-template-columns: 420px 1fr;
-  gap: 30px;
+.inspector-content {
+  background: #0d0f1a;
+  border: 2px solid;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.6);
+  flex-wrap: wrap;
 }
 
-@media (max-width: 960px) {
-  .arcade-arena-grid {
-    grid-template-columns: 1fr;
-  }
+.inspector-dot {
+  width: 10px;
+  height: 10px;
 }
 
-.tetris-board-frame {
+.inspector-title {
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.inspector-divider {
+  color: var(--text-dim);
+}
+
+.inspector-tagline {
+  font-size: 9px;
+  color: var(--text-main);
+  flex: 1;
+}
+
+.inspector-hint {
+  font-size: 8px;
+  color: var(--tetris-yellow);
+}
+
+.inspector-placeholder {
+  text-align: center;
+  font-size: 9px;
+  color: var(--text-dim);
+  padding: 10px;
+}
+
+/* Dominant 6-Column Solved Board */
+.tetris-fullscreen-board-container {
+  width: 100%;
+  max-width: 820px;
+  display: flex;
+  justify-content: center;
+}
+
+.board-outer-bezel {
   background: #000;
-  border: 4px solid var(--border-arcade);
+  border: 5px solid var(--border-arcade);
   padding: 16px;
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.8), inset 0 0 16px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 0, 0, 0.95);
+  width: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -540,48 +518,48 @@ body {
   font-size: 9px;
   color: var(--tetris-cyan);
   border-bottom: 2px dashed var(--border-arcade);
-  padding-bottom: 10px;
+  padding-bottom: 12px;
   margin-bottom: 12px;
 }
 
-.tetris-grid-container {
+.tetris-matrix-wrap {
   display: flex;
   flex-direction: column;
 }
 
-.grid-col-headers {
+.matrix-col-headers {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 4px;
-  margin-bottom: 6px;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
-.col-header-cell {
+.col-marker {
   text-align: center;
-  font-size: 8px;
+  font-size: 9px;
   color: var(--text-dim);
-  padding: 2px 0;
 }
 
-.grid-matrix-body {
+.matrix-viewport {
   display: grid;
   grid-template-rows: repeat(8, 1fr);
-  gap: 4px;
-  background: #090a12;
-  padding: 6px;
-  border: 2px solid var(--border-arcade);
+  gap: 6px;
+  background: #080911;
+  padding: 10px;
+  border: 3px solid var(--border-arcade);
 }
 
-.grid-matrix-row {
+.matrix-row {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 4px;
+  gap: 6px;
 }
 
-.grid-cell-slot {
+.matrix-cell {
   aspect-ratio: 1 / 1;
+  min-height: 58px;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -590,53 +568,60 @@ body {
   transition: all 0.15s;
 }
 
-.grid-cell-slot.cell-highlighted {
-  border-color: var(--text-bright);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+@media (max-width: 600px) {
+  .matrix-cell {
+    min-height: 38px;
+  }
 }
 
-.empty-cell-dot {
+.matrix-cell.is-hovered {
+  border-color: var(--text-bright);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+  z-index: 20;
+}
+
+.matrix-cell-empty-dot {
   width: 4px;
   height: 4px;
   background: rgba(255, 255, 255, 0.1);
 }
 
-.falling-cell-anim {
+.cell-fall-wrapper {
   width: 100%;
   height: 100%;
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
 }
 
-.falling-cell-anim.is-falling {
-  transform: translateY(-40px);
-  opacity: 0.25;
+.cell-fall-wrapper.falling {
+  transform: translateY(-50px);
+  opacity: 0.2;
 }
 
-.falling-cell-anim.is-landed {
+.cell-fall-wrapper.landed {
   transform: translateY(0);
   opacity: 1;
 }
 
 .board-solved-banner {
-  margin-top: 14px;
+  margin-top: 16px;
   background: linear-gradient(90deg, #aa3bff, #00f0f0);
   color: #000;
-  padding: 10px;
+  padding: 14px;
   text-align: center;
-  border: 2px solid #fff;
+  border: 3px solid #fff;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   animation: bannerGlow 1s infinite alternate;
 }
 
 @keyframes bannerGlow {
-  0% { box-shadow: 0 0 8px rgba(0, 240, 240, 0.5); }
-  100% { box-shadow: 0 0 20px rgba(170, 59, 255, 0.9); }
+  0% { box-shadow: 0 0 10px rgba(0, 240, 240, 0.6); }
+  100% { box-shadow: 0 0 24px rgba(170, 59, 255, 0.9); }
 }
 
 .solved-flash {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: bold;
 }
 
@@ -644,120 +629,59 @@ body {
   font-size: 9px;
 }
 
-/* Projects Roster Sidebar */
-.arcade-queue-sidebar {
-  display: flex;
-  flex-direction: column;
-}
-
-.queue-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid var(--border-arcade);
-  padding-bottom: 10px;
-  margin-bottom: 16px;
-}
-
-.queue-title {
-  font-size: 11px;
-  color: var(--tetris-yellow);
-}
-
-.queue-sub {
-  font-size: 8px;
-  color: var(--text-dim);
-}
-
-.project-queue-list {
+/* Quick Selector Roster of 8 Projects */
+.projects-quick-selector {
+  width: 100%;
+  max-width: 820px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 520px;
-  overflow-y: auto;
-  padding-right: 6px;
-}
-
-.project-queue-card {
-  display: flex;
-  background: var(--bg-card);
+  background: #000;
   border: 2px solid var(--border-arcade);
-  cursor: pointer;
-  transition: all 0.15s;
-  position: relative;
+  padding: 14px;
 }
 
-.project-queue-card:hover,
-.project-queue-card.card-hovered {
-  border-color: var(--text-bright);
-  transform: translateX(4px);
-  background: #202235;
-}
-
-.card-left-badge {
-  width: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #000;
-  font-weight: bold;
-  font-size: 16px;
-  border-right: 2px solid #000;
-}
-
-.card-main-info {
-  flex: 1;
-  padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.card-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-title {
-  font-size: 11px;
-  font-weight: bold;
-}
-
-.card-points {
+.selector-label {
   font-size: 9px;
   color: var(--tetris-yellow);
 }
 
-.card-tagline {
-  font-size: 9px;
-  color: var(--text-dim);
-  line-height: 1.4;
-}
-
-.card-tags-mini {
+.selector-pills {
   display: flex;
-  gap: 6px;
-  margin-top: 4px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.mini-tag {
-  font-size: 7px;
-  background: #10111a;
-  padding: 2px 6px;
-  color: var(--tetris-cyan);
-  border: 1px solid var(--border-arcade);
-}
-
-.card-status-pill {
-  padding: 10px 12px;
+.project-pill-btn {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  background: #141624;
+  color: var(--text-bright);
+  border: 2px solid var(--border-arcade);
+  border-left: 5px solid;
+  padding: 6px 12px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  font-size: 8px;
+  gap: 8px;
+  transition: all 0.15s;
 }
 
-.pill-locked { color: var(--tetris-green); }
-.pill-queue { color: var(--text-dim); }
+.project-pill-btn:hover,
+.project-pill-btn.active {
+  background: #23273e;
+  border-color: var(--text-bright);
+  transform: translateY(-2px);
+}
+
+.pill-dot {
+  width: 6px;
+  height: 6px;
+}
+
+.pill-ext {
+  color: var(--text-dim);
+}
 
 /* =========================================================
    RETRO MODAL (PROJECT & COLLAB)
@@ -765,7 +689,7 @@ body {
 .retro-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.88);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -776,8 +700,8 @@ body {
 .retro-modal-window {
   background: var(--bg-surface);
   border: 4px solid var(--border-glow);
-  box-shadow: 0 0 32px rgba(170, 59, 255, 0.4), inset 0 0 16px rgba(0, 0, 0, 0.8);
-  width: 640px;
+  box-shadow: 0 0 36px rgba(170, 59, 255, 0.5), inset 0 0 16px rgba(0, 0, 0, 0.8);
+  width: 680px;
   max-width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -944,7 +868,7 @@ body {
 }
 
 /* =========================================================
-   PAC-MAN PAGE TRANSITIONS (FULLSCREEN CHOMP)
+   PAC-MAN PAGE TRANSITIONS
 ========================================================= */
 .pacman-transition-overlay {
   position: fixed;
@@ -1062,12 +986,45 @@ body {
 }
 
 /* =========================================================
-   IDEA LAB & TUMBLING TETRIS PIECES
+   IDEA LAB
 ========================================================= */
 .idea-lab-section {
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.arcade-cabinet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 3px solid var(--border-arcade);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.arcade-sub {
+  display: block;
+  font-size: 9px;
+  color: var(--border-glow);
+  margin-bottom: 8px;
+}
+
+.arcade-main-title {
+  font-size: 26px;
+  color: var(--text-bright);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.title-lab { color: var(--tetris-yellow); }
+.title-docs { color: var(--border-glow); }
+
+.arcade-instruction {
+  font-size: 10px;
+  color: var(--text-dim);
 }
 
 .tumbling-canvas-container {
@@ -1299,7 +1256,7 @@ body {
 }
 
 /* =========================================================
-   STANDALONE IDEA LAB COMPONENT & DOCS / PRODUCT HUNT
+   DOCS & PRODUCT HUNT LAUNCH
 ========================================================= */
 .docs-launch-section {
   display: flex;
@@ -1560,239 +1517,6 @@ body {
   border: none;
   padding: 4px 8px;
   cursor: pointer;
-}
-
-/* =========================================================
-   LEADERBOARD & 3-INITIALS CONTACT
-========================================================= */
-.leaderboard-section {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.leaderboard-grid-layout {
-  display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 28px;
-}
-
-@media (max-width: 960px) {
-  .leaderboard-grid-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-.arcade-scores-table-box {
-  background: #000;
-  border: 4px solid var(--border-arcade);
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
-  display: flex;
-  flex-direction: column;
-}
-
-.table-top-marquee {
-  background: #0c0d16;
-  padding: 12px;
-  text-align: center;
-  font-size: 10px;
-  color: var(--tetris-yellow);
-  border-bottom: 2px solid var(--border-arcade);
-}
-
-.retro-scores-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.retro-scores-table th {
-  padding: 12px 14px;
-  font-size: 9px;
-  color: var(--tetris-cyan);
-  border-bottom: 2px solid var(--border-arcade);
-}
-
-.retro-scores-table td {
-  padding: 12px 14px;
-  font-size: 9px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.score-row.rank-1 .cell-score { color: var(--tetris-yellow); font-weight: bold; }
-.score-row.rank-2 .cell-score { color: #e2e8f0; }
-.score-row.rank-3 .cell-score { color: #d97706; }
-
-.score-row.user-entry {
-  background: rgba(170, 59, 255, 0.25);
-  animation: pulseSolved 1s infinite alternate;
-}
-
-.cell-init {
-  color: var(--tetris-green);
-  font-weight: bold;
-}
-
-.role-tag {
-  background: #141524;
-  padding: 3px 6px;
-  font-size: 8px;
-  color: var(--text-dim);
-}
-
-.table-bottom-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #0c0d16;
-  padding: 12px 16px;
-  border-top: 2px solid var(--border-arcade);
-  font-size: 8px;
-  color: var(--text-dim);
-}
-
-.direct-email-link {
-  color: var(--tetris-yellow);
-  text-decoration: none;
-}
-
-.direct-email-link:hover {
-  text-decoration: underline;
-}
-
-/* Initials Terminal Box */
-.initials-terminal-box {
-  background: var(--bg-card);
-  border: 4px solid var(--border-arcade);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-.terminal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid var(--border-arcade);
-  padding-bottom: 10px;
-  margin-bottom: 18px;
-}
-
-.terminal-title {
-  font-size: 10px;
-  color: var(--border-glow);
-}
-
-.terminal-dot {
-  width: 8px;
-  height: 8px;
-  background: var(--tetris-green);
-  border-radius: 50%;
-  animation: blink 0.8s infinite step-start;
-}
-
-.initials-selector-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 18px;
-  align-items: center;
-  background: #000;
-  padding: 16px;
-  border: 2px solid var(--border-arcade);
-}
-
-.selector-title {
-  font-size: 9px;
-  color: var(--tetris-yellow);
-}
-
-.slots-container {
-  display: flex;
-  gap: 16px;
-}
-
-.slot-wheel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.slot-arrow {
-  font-family: var(--pixel-font);
-  font-size: 10px;
-  background: #181926;
-  color: var(--tetris-cyan);
-  border: 1px solid var(--border-arcade);
-  width: 32px;
-  height: 24px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.slot-arrow:hover {
-  background: var(--tetris-cyan);
-  color: #000;
-}
-
-.slot-digit {
-  font-size: 24px;
-  background: #0a0b12;
-  color: #fff;
-  border: 2px solid var(--border-glow);
-  width: 48px;
-  height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: inset 0 0 10px rgba(170, 59, 255, 0.5);
-}
-
-.terminal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.terminal-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.terminal-success-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 30px 10px;
-  gap: 14px;
-}
-
-.success-icon {
-  font-size: 36px;
-}
-
-.success-title {
-  font-size: 16px;
-  color: var(--tetris-yellow);
-}
-
-.success-desc {
-  font-size: 10px;
-  color: var(--text-dim);
-  line-height: 1.6;
-}
-
-.success-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  margin-top: 10px;
 }
 
 /* =========================================================

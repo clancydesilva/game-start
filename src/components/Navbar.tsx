@@ -24,45 +24,56 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navItems: { id: PageView; label: string; icon: string }[] = [
     { id: 'projects', label: 'TETRIS PROJECTS', icon: '▦' },
     { id: 'idealab', label: 'IDEA LAB', icon: '⚗' },
-    { id: 'leaderboard', label: 'LEADERBOARD', icon: '🏆' },
     { id: 'docs', label: 'NPM & DOCS', icon: '📦' },
     { id: 'gameover', label: 'GAME OVER', icon: '💀' }
   ];
 
   return (
     <header className="arcade-navbar" role="banner">
-      <div className="navbar-top-bezel">
-        <div className="player-badge">
-          <span className="blink-beacon">●</span>
-          <span className="player-title">1UP CLANCY DESILVA</span>
-          <span className="player-coins">CREDIT 02</span>
+      {/* Top Centerpiece: Large Centered Name */}
+      <div className="navbar-hero-centerpiece">
+        <div className="navbar-top-controls left">
+          <div className="arcade-credit-chip">
+            <span className="blink-beacon">●</span>
+            <span>INSERT COIN</span>
+          </div>
         </div>
 
-        <div className="navbar-score-box">
-          <span className="hud-title">HIGH SCORE</span>
-          <span className="hud-number">{score.toString().padStart(6, '0')}</span>
+        <div className="navbar-name-group">
+          <h1 className="arcade-large-name">CLANCY DESILVA</h1>
+          <p className="arcade-subtitle">
+            SOFTWARE ENGINEER // RETRO ARCADE PORTFOLIO
+          </p>
         </div>
 
-        <div className="navbar-toggles">
-          <button
-            type="button"
-            className={`retro-toggle-btn ${sfxEnabled ? 'active' : ''}`}
-            onClick={onToggleSfx}
-            title="Toggle Arcade Sound Effects"
-          >
-            SFX: {sfxEnabled ? 'ON' : 'MUTE'}
-          </button>
-          <button
-            type="button"
-            className={`retro-toggle-btn ${crtEnabled ? 'active' : ''}`}
-            onClick={onToggleCrt}
-            title="Toggle Retro CRT Scanlines"
-          >
-            CRT: {crtEnabled ? 'ON' : 'OFF'}
-          </button>
+        <div className="navbar-top-controls right">
+          <div className="navbar-score-box">
+            <span className="hud-title">SCORE</span>
+            <span className="hud-number">{score.toString().padStart(6, '0')}</span>
+          </div>
+
+          <div className="navbar-toggles">
+            <button
+              type="button"
+              className={`retro-toggle-btn ${sfxEnabled ? 'active' : ''}`}
+              onClick={onToggleSfx}
+              title="Toggle Arcade Sound Effects"
+            >
+              SFX: {sfxEnabled ? 'ON' : 'MUTE'}
+            </button>
+            <button
+              type="button"
+              className={`retro-toggle-btn ${crtEnabled ? 'active' : ''}`}
+              onClick={onToggleCrt}
+              title="Toggle Retro CRT Scanlines"
+            >
+              CRT: {crtEnabled ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* Arcade Tabs Navigation */}
       <nav className="navbar-nav-tabs" aria-label="Arcade Navigation">
         {navItems.map((item) => {
           const isActive = currentPage === item.id;

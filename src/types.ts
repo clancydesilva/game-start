@@ -43,4 +43,4 @@ export interface LeaderboardEntry {
   contactUrl?: string;
 }
 
-export type PageView = 'projects' | 'idealab' | 'leaderboard' | 'gameover' | 'docs';
+export type PageView = 'projects' | 'idealab' | 'gameover' | 'docs';

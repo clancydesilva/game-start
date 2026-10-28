@@ -18,11 +18,8 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
   const [isSolved, setIsSolved] = useState<boolean>(false);
   const [hoveredProjectId, setHoveredProjectId] = useState<string | null>(null);
 
-  // Sound ref to prevent spamming audio
   const prevLandedRef = useRef<number>(0);
-
-  // Total projects = 12
-  const totalProjects = PROJECTS.length;
+  const totalProjects = PROJECTS.length; // 8 real projects
 
   // Scroll detection to trigger falling pieces
   useEffect(() => {
@@ -33,9 +30,8 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
 
       // Start dropping when section enters view
       const topOffset = rect.top;
-      const totalScrollable = rect.height - windowHeight * 0.4;
+      const totalScrollable = rect.height - windowHeight * 0.3;
       
-      // Calculate progress from 0 to 1
       const progress = Math.min(
         1,
         Math.max(0, (windowHeight * 0.7 - topOffset) / (totalScrollable > 0 ? totalScrollable : 1))
@@ -56,12 +52,11 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
   // Handle score, lines, and audio effects on pieces landing
   useEffect(() => {
     if (landedCount > prevLandedRef.current) {
-      // Piece landed!
       sfx.playDrop();
 
       let addedScore = 0;
       for (let i = prevLandedRef.current; i < landedCount; i++) {
-        addedScore += PROJECTS[i]?.points || 500;
+        addedScore += PROJECTS[i]?.points || 1500;
       }
 
       setScore((prev) => {
@@ -70,7 +65,6 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
         return nextScore;
       });
 
-      // Rows cleared approximation
       setLines(Math.floor((landedCount / totalProjects) * TETRIS_ROWS));
 
       if (landedCount === totalProjects && !isSolved) {
@@ -83,7 +77,6 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
         });
       }
     } else if (landedCount < prevLandedRef.current) {
-      // Reset occurred
       setIsSolved(false);
     }
     prevLandedRef.current = landedCount;
@@ -112,7 +105,6 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
   };
 
   // Build grid map for the 6x8 board
-  // grid[y][x] = { project, isLanded }
   const gridState: { project: ProjectItem | null; isLanded: boolean }[][] = Array.from(
     { length: TETRIS_ROWS },
     () => Array.from({ length: TETRIS_COLS }, () => ({ project: null, isLanded: false }))
@@ -127,81 +119,93 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
     });
   });
 
-  return (
-    <section ref={containerRef} className="tetris-section-wrapper" id="projects-arcade">
-      <div className="arcade-cabinet-header">
-        <div className="arcade-title-box">
-          <span className="arcade-sub">STAGE 01 // PORTFOLIO MATRIX</span>
-          <h2 className="arcade-main-title">
-            <span className="title-tetris">TETRIS</span> PROJECTS
-          </h2>
-          <p className="arcade-instruction">
-            SCROLL DOWN TO DROP BLOCKS • CLICK ANY PIECE FOR DETAILS
-          </p>
-        </div>
+  const activeHoverProject = PROJECTS.find((p) => p.id === hoveredProjectId);
 
-        {/* Live HUD Scoreboard */}
-        <div className="arcade-hud-panel">
-          <div className="hud-metric">
-            <span className="hud-label">SCORE</span>
-            <span className="hud-value hud-score">
-              {score.toString().padStart(6, '0')}
-            </span>
-          </div>
-          <div className="hud-metric">
-            <span className="hud-label">BLOCKS</span>
-            <span className="hud-value">
-              {landedCount} / {totalProjects}
-            </span>
-          </div>
-          <div className="hud-metric">
-            <span className="hud-label">LINES</span>
-            <span className="hud-value hud-lines">{lines} / {TETRIS_ROWS}</span>
-          </div>
-          <div className="hud-metric">
-            <span className="hud-label">STATUS</span>
-            <span className={`hud-value ${isSolved ? 'hud-solved' : 'hud-active'}`}>
-              {isSolved ? '★ SOLVED ★' : 'FALLING...'}
-            </span>
-          </div>
+  return (
+    <section ref={containerRef} className="tetris-fullscreen-section" id="projects-arcade">
+      {/* HUD Info Header */}
+      <div className="tetris-hud-bar">
+        <div className="hud-metric">
+          <span className="hud-label">SCORE</span>
+          <span className="hud-value hud-score">{score.toString().padStart(6, '0')}</span>
+        </div>
+        <div className="hud-metric">
+          <span className="hud-label">PROJECTS LANDED</span>
+          <span className="hud-value">{landedCount} / {totalProjects}</span>
+        </div>
+        <div className="hud-metric">
+          <span className="hud-label">SOLVED ROWS</span>
+          <span className="hud-value hud-lines">{lines} / {TETRIS_ROWS}</span>
+        </div>
+        <div className="hud-metric">
+          <span className="hud-label">MATRIX STATUS</span>
+          <span className={`hud-value ${isSolved ? 'hud-solved' : 'hud-active'}`}>
+            {isSolved ? '★ 100% SOLVED ★' : 'IN PLAY'}
+          </span>
         </div>
       </div>
 
-      {/* Manual Control Buttons */}
-      <div className="arcade-controls-bar">
-        <button className="retro-btn btn-sm" onClick={handleManualStepDrop} disabled={landedCount >= totalProjects}>
+      {/* Control Buttons */}
+      <div className="tetris-control-bar">
+        <button
+          className="retro-btn btn-sm"
+          onClick={handleManualStepDrop}
+          disabled={landedCount >= totalProjects}
+        >
           <span>▼ STEP DROP</span>
         </button>
-        <button className="retro-btn btn-sm btn-primary" onClick={handleManualDropAll} disabled={landedCount >= totalProjects}>
-          <span>⚡ DROP ALL</span>
+        <button
+          className="retro-btn btn-sm btn-primary"
+          onClick={handleManualDropAll}
+          disabled={landedCount >= totalProjects}
+        >
+          <span>⚡ DROP ALL PIECES</span>
         </button>
         <button className="retro-btn btn-sm btn-outline" onClick={handleResetBoard}>
-          <span>↺ RESET</span>
+          <span>↺ RESET BOARD</span>
         </button>
       </div>
 
-      {/* Main Board Layout */}
-      <div className="arcade-arena-grid">
-        {/* The 6-Column Solved Board */}
-        <div className="tetris-board-frame">
+      {/* Project Hover Inspector Banner */}
+      <div className="project-inspector-banner">
+        {activeHoverProject ? (
+          <div className="inspector-content" style={{ borderColor: activeHoverProject.color }}>
+            <span className="inspector-dot" style={{ backgroundColor: activeHoverProject.color }} />
+            <span className="inspector-title" style={{ color: activeHoverProject.color }}>
+              {activeHoverProject.title}
+            </span>
+            <span className="inspector-divider">//</span>
+            <span className="inspector-tagline">{activeHoverProject.tagline}</span>
+            <span className="inspector-hint">▶ CLICK BLOCK TO OPEN DETAILS & REPO</span>
+          </div>
+        ) : (
+          <div className="inspector-placeholder">
+            <span>▼ HOVER & CLICK ANY TETRIS BLOCK TO INSPECT REPOSITORY DETAILS ▼</span>
+          </div>
+        )}
+      </div>
+
+      {/* Dominant Screen-Filling 6-Column Tetris Board */}
+      <div className="tetris-fullscreen-board-container">
+        <div className="board-outer-bezel">
           <div className="board-top-marquee">
-            <span className="marquee-beacon">● 6-COL MATRIX ACTIVE ●</span>
+            <span>● 6-COLUMN SOLVED MATRIX // CLANCY DESILVA REPOSITORIES ●</span>
           </div>
 
-          <div className="tetris-grid-container">
-            {/* Grid Column Labels */}
-            <div className="grid-col-headers">
+          <div className="tetris-matrix-wrap">
+            {/* Column coordinate markers */}
+            <div className="matrix-col-headers">
               {Array.from({ length: TETRIS_COLS }).map((_, c) => (
-                <div key={c} className="col-header-cell">
-                  0{c + 1}
+                <div key={c} className="col-marker">
+                  COL-0{c + 1}
                 </div>
               ))}
             </div>
 
-            {/* Matrix Cells */}
-            <div className="grid-matrix-body">
+            {/* Matrix rows and cells */}
+            <div className="matrix-viewport">
               {gridState.map((row, y) => (
-                <div key={y} className="grid-matrix-row">
+                <div key={y} className="matrix-row">
                   {row.map((cell, x) => {
                     const isHovered =
                       cell.project && cell.project.id === hoveredProjectId;
@@ -209,9 +213,9 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
                     return (
                       <div
                         key={x}
-                        className={`grid-cell-slot ${cell.project ? 'has-piece' : ''} ${
-                          cell.isLanded ? 'cell-landed' : 'cell-empty'
-                        } ${isHovered ? 'cell-highlighted' : ''}`}
+                        className={`matrix-cell ${cell.project ? 'has-piece' : ''} ${
+                          cell.isLanded ? 'is-landed' : 'is-empty'
+                        } ${isHovered ? 'is-hovered' : ''}`}
                         onClick={() => {
                           if (cell.project) {
                             setSelectedProject(cell.project);
@@ -224,8 +228,8 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
                       >
                         {cell.project ? (
                           <div
-                            className={`falling-cell-anim ${
-                              cell.isLanded ? 'is-landed' : 'is-falling'
+                            className={`cell-fall-wrapper ${
+                              cell.isLanded ? 'landed' : 'falling'
                             }`}
                           >
                             <TetrisBlock
@@ -233,11 +237,11 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
                               size="100%"
                               isGhost={!cell.isLanded}
                               isSolved={isSolved}
-                              label={cell.isLanded ? cell.project.type : ''}
+                              label={cell.isLanded ? cell.project.title.slice(0, 3) : ''}
                             />
                           </div>
                         ) : (
-                          <div className="empty-cell-dot" />
+                          <div className="matrix-cell-empty-dot" />
                         )}
                       </div>
                     );
@@ -247,71 +251,47 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
             </div>
           </div>
 
+          {/* Solved celebration banner */}
           {isSolved && (
             <div className="board-solved-banner">
-              <span className="solved-flash">★ TETRIS 100% SOLVED! ★</span>
-              <span className="solved-bonus">+10,000 PTS BONUS AWARDED</span>
+              <span className="solved-flash">★ ALL 8 REPOSITORIES SOLVED & LOCKED IN! ★</span>
+              <span className="solved-bonus">+10,000 PTS BONUS AWARDED // CLICK ANY BLOCK FOR CODE</span>
             </div>
           )}
         </div>
+      </div>
 
-        {/* Project Roster & Next Queue */}
-        <div className="arcade-queue-sidebar">
-          <div className="queue-header">
-            <span className="queue-title">PROJECT DISK DIRECTORY</span>
-            <span className="queue-sub">CLICK TO BOOT EXECUTABLE</span>
-          </div>
+      {/* Roster of 8 Real Projects Quick-Pill Bar */}
+      <div className="projects-quick-selector">
+        <div className="selector-label">
+          <span>GITHUB REPOSITORIES:</span>
+        </div>
+        <div className="selector-pills">
+          {PROJECTS.map((project, idx) => {
+            const isLanded = idx < landedCount;
+            const isHovered = hoveredProjectId === project.id;
 
-          <div className="project-queue-list">
-            {PROJECTS.map((project, idx) => {
-              const isLanded = idx < landedCount;
-              const isHovered = hoveredProjectId === project.id;
-
-              return (
-                <div
-                  key={project.id}
-                  className={`project-queue-card ${isLanded ? 'card-landed' : 'card-pending'} ${
-                    isHovered ? 'card-hovered' : ''
-                  }`}
-                  onClick={() => setSelectedProject(project)}
-                  onMouseEnter={() => setHoveredProjectId(project.id)}
-                  onMouseLeave={() => setHoveredProjectId(null)}
-                >
-                  <div className="card-left-badge" style={{ backgroundColor: project.color }}>
-                    <span className="card-tetromino-type">{project.type}</span>
-                  </div>
-
-                  <div className="card-main-info">
-                    <div className="card-title-row">
-                      <span className="card-title" style={{ color: project.color }}>
-                        {project.title}
-                      </span>
-                      <span className="card-points">+{project.points}</span>
-                    </div>
-                    <p className="card-tagline">{project.tagline}</p>
-                    <div className="card-tags-mini">
-                      {project.tags.slice(0, 2).map((t, ti) => (
-                        <span key={ti} className="mini-tag">
-                          {t}
-                        </span>
-                      ))}
-                      {project.tags.length > 2 && (
-                        <span className="mini-tag">+{project.tags.length - 2}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="card-status-pill">
-                    {isLanded ? (
-                      <span className="pill-locked">LOCKED IN</span>
-                    ) : (
-                      <span className="pill-queue">IN QUEUE</span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+            return (
+              <button
+                key={project.id}
+                type="button"
+                className={`project-pill-btn ${isLanded ? 'landed' : 'pending'} ${
+                  isHovered ? 'active' : ''
+                }`}
+                style={{
+                  borderLeftColor: project.color,
+                  boxShadow: isHovered ? `0 0 12px ${project.color}` : 'none'
+                }}
+                onClick={() => setSelectedProject(project)}
+                onMouseEnter={() => setHoveredProjectId(project.id)}
+                onMouseLeave={() => setHoveredProjectId(null)}
+              >
+                <span className="pill-dot" style={{ backgroundColor: project.color }} />
+                <span className="pill-title">{project.title}</span>
+                <span className="pill-ext">↗</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
