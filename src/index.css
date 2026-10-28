@@ -305,7 +305,7 @@ body {
 }
 
 /* =========================================================
-   RESTORED 2-COLUMN TETRIS ARCADE LAYOUT
+   RESTORED 2-COLUMN TETRIS ARCADE LAYOUT & 3 SCROLL ZONES
 ========================================================= */
 .arcade-cabinet-viewport {
   max-width: 1200px;
@@ -394,12 +394,19 @@ body {
   flex-wrap: wrap;
 }
 
-.scroll-hint-tag {
-  background: #0b0d18;
-  border: 1px dashed var(--tetris-cyan);
+.simultaneous-unlock-banner {
+  background: linear-gradient(90deg, #aa3bff, #facc15);
+  color: #000;
   padding: 6px 12px;
-  font-size: 8px;
-  color: var(--tetris-cyan);
+  font-size: 9px;
+  font-weight: bold;
+  border: 2px solid #fff;
+  animation: bannerPulse 0.5s infinite alternate;
+}
+
+@keyframes bannerPulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.03); box-shadow: 0 0 14px rgba(250, 204, 21, 0.8); }
 }
 
 /* Generic Retro Buttons */
@@ -469,6 +476,27 @@ body {
   border-color: var(--border-arcade);
 }
 
+/* Scroll Zone Badges */
+.scroll-zone-badge {
+  font-size: 8px;
+  padding: 6px 12px;
+  border: 1px dashed;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.scroll-zone-badge.game-zone {
+  border-color: var(--tetris-cyan);
+  color: var(--tetris-cyan);
+  background: rgba(0, 240, 240, 0.05);
+}
+
+.scroll-zone-badge.projects-zone {
+  border-color: var(--tetris-yellow);
+  color: var(--tetris-yellow);
+  background: rgba(250, 204, 21, 0.05);
+}
+
 /* 2-Column Arena Grid */
 .arcade-arena-grid {
   display: grid;
@@ -483,11 +511,14 @@ body {
   }
 }
 
-/* Left Column: Tetris Board & Next Piece */
+/* Left Column: Tetris Board & Next Piece (SCROLL ZONE 1) */
 .arcade-board-column {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  border: 2px solid rgba(0, 240, 240, 0.3);
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .tetris-board-frame {
@@ -655,11 +686,14 @@ body {
   padding: 10px;
 }
 
-/* Right Column: Normal Divs List (Cleared / Destroyed Projects) */
+/* Right Column: Normal Divs List (SCROLL ZONE 2) */
 .arcade-queue-sidebar {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  border: 2px solid rgba(250, 204, 21, 0.25);
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .queue-header {
@@ -691,13 +725,33 @@ body {
   color: var(--tetris-green);
 }
 
+/* Independent Scroll Container */
 .project-queue-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 640px;
+  max-height: 540px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 6px;
+}
+
+/* Retro Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #090a12;
+  border: 1px solid var(--border-arcade);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-arcade);
+  border: 1px solid var(--tetris-yellow);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--tetris-yellow);
 }
 
 /* Project Normal Div */

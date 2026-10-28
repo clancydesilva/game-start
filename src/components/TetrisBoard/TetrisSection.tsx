@@ -17,7 +17,8 @@ interface LandedPiece {
 }
 
 export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Scoped ref for the Game View scroll zone
+  const gameViewRef = useRef<HTMLDivElement>(null);
 
   // Active game state
   const [currentProjectIndex, setCurrentProjectIndex] = useState<number>(0);
@@ -30,6 +31,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
   const [lines, setLines] = useState<number>(0);
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [autoPlay, setAutoPlay] = useState<boolean>(false);
+  const [simultaneousUnlockBanner, setSimultaneousUnlockBanner] = useState<string | null>(null);
 
   const totalProjects = PROJECTS.length;
   const currentProject: ProjectItem | null =
@@ -38,11 +40,6 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
     currentProjectIndex + 1 < totalProjects ? PROJECTS[currentProjectIndex + 1] : null;
 
   // Calculate coordinates of the currently active falling piece based on motionStep (0 to 4)
-  // Step 0: Spawn at top (y: 0, 1), centered
-  // Step 1: Moves down (y: 2, 3)
-  // Step 2: Rotates / Turns (sfx.playRotate())
-  // Step 3: Shifts horizontally to target column
-  // Step 4: Lands in target resting position (sfx.playDrop())
   const getActivePieceCells = useCallback((): GridCell[] => {
     if (!currentProject) return [];
 
@@ -50,7 +47,6 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
     const finalMinX = Math.min(...finalCells.map((c) => c.x));
     const finalMinY = Math.min(...finalCells.map((c) => c.y));
 
-    // Normalized relative offsets from (0,0)
     const relCells = finalCells.map((c) => ({
       x: c.x - finalMinX,
       y: c.y - finalMinY
@@ -61,19 +57,18 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
       const spawnX = Math.max(0, Math.floor((TETRIS_COLS - 3) / 2));
       return relCells.map((c) => ({ x: spawnX + c.x, y: c.y }));
     } else if (motionStep === 1) {
-      // Down two rows
+      // Step 1: Moves down
       const spawnX = Math.max(0, Math.floor((TETRIS_COLS - 3) / 2));
       return relCells.map((c) => ({ x: spawnX + c.x, y: c.y + 2 }));
     } else if (motionStep === 2) {
-      // Rotated / turned state
+      // Step 2: Rotates / Turns
       const targetMidX = Math.round((finalMinX + 1) / 2);
       return relCells.map((c) => ({
-        // Predetermined turn: swap x & y delta for visual rotation
         x: Math.min(TETRIS_COLS - 1, Math.max(0, targetMidX + c.y)),
         y: Math.min(TETRIS_ROWS - 1, c.x + 3)
       }));
     } else if (motionStep === 3) {
-      // Shifted horizontally above target column
+      // Step 3: Shifts horizontally toward target columns
       return relCells.map((c) => ({
         x: finalMinX + c.x,
         y: Math.max(0, finalMinY - 2 + c.y)
@@ -84,19 +79,18 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
     }
   }, [currentProject, motionStep]);
 
-  // Advance game by 1 step (driven by mouse wheel, keydown, or button)
+  // Advance game by 1 step
   const advanceStep = useCallback(() => {
     if (isGameOver || !currentProject) return;
 
     if (motionStep < 3) {
-      // Intermediate falling & turning steps
       const nextStep = motionStep + 1;
       setMotionStep(nextStep);
       if (nextStep === 2 || nextStep === 3) {
         sfx.playRotate();
       }
     } else if (motionStep === 3) {
-      // Piece LANDS in resting slot
+      // Piece lands
       sfx.playDrop();
       setMotionStep(4);
 
@@ -110,7 +104,6 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
       const updatedLanded = [...landedPieces, newLandedPiece];
       setLandedPieces(updatedLanded);
 
-      // Score for piece drop
       const piecePoints = currentProject.points || 1500;
       setScore((prev) => {
         const nextScore = prev + piecePoints;
@@ -118,15 +111,12 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
         return nextScore;
       });
 
-      // Check if rows are now completely filled across all 6 columns
-      // Check each row from 0 to TETRIS_ROWS - 1
+      // Check for completely filled rows across all 6 columns
       const filledRowIndices: number[] = [];
       for (let r = 0; r < TETRIS_ROWS; r++) {
-        // Collect all non-destroyed landed cells in row r
         const cellsInRow = updatedLanded.flatMap((p) =>
           p.isDestroyed ? [] : p.cells.filter((c) => c.y === r)
         );
-        // All 6 columns filled?
         const uniqueCols = new Set(cellsInRow.map((c) => c.x));
         if (uniqueCols.size >= TETRIS_COLS) {
           filledRowIndices.push(r);
@@ -134,7 +124,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
       }
 
       if (filledRowIndices.length > 0) {
-        // LINE CLEAR!
+        // Line clear!
         setClearingRowIndices(filledRowIndices);
         sfx.playLineClear();
 
@@ -145,28 +135,38 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
           return bonus;
         });
 
-        // Identify which projects have blocks in these completed lines
-        const projectsInCompletedRows = updatedLanded
+        // Find all projects that had blocks in ANY of the cleared lines
+        const newlyUnlockedProjects = updatedLanded
           .filter((p) => p.cells.some((c) => filledRowIndices.includes(c.y)))
           .map((p) => p.project.id);
 
+        const uniqueNewlyUnlocked = [
+          ...new Set(newlyUnlockedProjects.filter((id) => !clearedProjectIds.includes(id)))
+        ];
+
+        if (uniqueNewlyUnlocked.length > 1) {
+          setSimultaneousUnlockBanner(
+            `★ MULTI-UNLOCK! ${uniqueNewlyUnlocked.length} PROJECTS UNLOCKED AT ONCE! ★`
+          );
+          setTimeout(() => setSimultaneousUnlockBanner(null), 3000);
+        }
+
         setTimeout(() => {
-          // Mark completed lines as destroyed & unlock project into normal divs
           setLandedPieces((prev) =>
             prev.map((p) =>
-              projectsInCompletedRows.includes(p.project.id)
+              newlyUnlockedProjects.includes(p.project.id)
                 ? { ...p, isDestroyed: true }
                 : p
             )
           );
           setClearedProjectIds((prev) => [
-            ...new Set([...prev, ...projectsInCompletedRows])
+            ...new Set([...prev, ...newlyUnlockedProjects])
           ]);
           setClearingRowIndices([]);
         }, 650);
       }
 
-      // Prepare next project
+      // Next project
       setTimeout(() => {
         if (currentProjectIndex + 1 < totalProjects) {
           setCurrentProjectIndex((prev) => prev + 1);
@@ -184,10 +184,11 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
     landedPieces,
     currentProjectIndex,
     totalProjects,
+    clearedProjectIds,
     onScoreChange
   ]);
 
-  // Step backwards (for undo / rewind)
+  // Step backwards
   const stepBack = useCallback(() => {
     if (motionStep > 0) {
       sfx.playRotate();
@@ -204,28 +205,30 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
     return () => clearInterval(interval);
   }, [autoPlay, isGameOver, advanceStep]);
 
-  // Scroll interception: Scrolling advances block down (no window scrolling)
+  // SCROLL ZONE 1: Game View Scroll Zone
+  // The wheel listener is scoped ONLY to gameViewRef.
+  // Scrolling here advances the block and prevents normal page scroll.
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    const gameElem = gameViewRef.current;
+    if (!gameElem) return;
 
     let wheelAccum = 0;
     const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
+      e.preventDefault(); // Stop window scroll only within the game view zone
+      e.stopPropagation();
       wheelAccum += e.deltaY;
 
-      // Every 30px of scroll delta advances 1 step
-      if (wheelAccum > 28) {
+      if (wheelAccum > 24) {
         advanceStep();
         wheelAccum = 0;
-      } else if (wheelAccum < -28) {
+      } else if (wheelAccum < -24) {
         stepBack();
         wheelAccum = 0;
       }
     };
 
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
+    gameElem.addEventListener('wheel', handleWheel, { passive: false });
+    return () => gameElem.removeEventListener('wheel', handleWheel);
   }, [advanceStep, stepBack]);
 
   // Keyboard navigation
@@ -254,11 +257,11 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
     setLines(0);
     setIsGameOver(false);
     setAutoPlay(false);
+    setSimultaneousUnlockBanner(null);
     onScoreChange?.(0);
   };
 
   // Build grid map for the 6x8 board
-  // Each cell: { project, isLanded, isFalling, isClearedRow }
   const activeCells = motionStep < 4 ? getActivePieceCells() : [];
 
   const gridMatrix: {
@@ -303,7 +306,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
   );
 
   return (
-    <div ref={containerRef} className="tetris-arcade-layout-wrapper" id="projects-arcade">
+    <div className="tetris-arcade-layout-wrapper" id="projects-arcade">
       {/* Top Arcade HUD Header */}
       <div className="arcade-cabinet-header">
         <div className="arcade-title-box">
@@ -312,7 +315,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
             <span className="title-tetris">TETRIS</span> REPOSITORY ENGINE
           </h2>
           <p className="arcade-instruction">
-            SCROLL DOWN WITH MOUSE WHEEL TO ADVANCE BLOCKS • FILL A LINE TO DESTROY BLOCK & UNLOCK REPOSITORY
+            3 SCROLL ZONES: HOVER GAME TO ADVANCE • HOVER SIDEBAR TO BROWSE • SCROLL OUTSIDE FOR SITE
           </p>
         </div>
 
@@ -341,15 +344,15 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
         </div>
       </div>
 
-      {/* Control Action Buttons */}
+      {/* Control Action Buttons & Multi-Unlock Notification */}
       <div className="arcade-controls-bar">
         <button
           className="retro-btn btn-sm btn-primary"
           onClick={advanceStep}
           disabled={isGameOver}
-          title="Scroll mouse wheel down or click to advance"
+          title="Click or scroll wheel over game view to advance"
         >
-          <span>▼ ADVANCE (OR SCROLL)</span>
+          <span>▼ ADVANCE PIECE</span>
         </button>
         <button
           className={`retro-btn btn-sm ${autoPlay ? 'btn-active' : ''}`}
@@ -363,18 +366,25 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
         <button className="retro-btn btn-sm btn-outline" onClick={handleResetGame}>
           <span>↺ RESET GAME</span>
         </button>
-        <div className="scroll-hint-tag">
-          <span>↕ WHEEL SCROLL ADVANCES BLOCK</span>
-        </div>
+
+        {simultaneousUnlockBanner && (
+          <div className="simultaneous-unlock-banner">
+            <span>{simultaneousUnlockBanner}</span>
+          </div>
+        )}
       </div>
 
-      {/* The Restored 2-Column Layout */}
+      {/* 2-Column Arena Grid */}
       <div className="arcade-arena-grid">
-        {/* LEFT COLUMN: The 6-Column Square Tetris Board + Next Piece */}
-        <div className="arcade-board-column">
+        {/* SCROLL ZONE 1: Left Column Game View */}
+        <div ref={gameViewRef} className="arcade-board-column scroll-zone-game">
+          <div className="scroll-zone-badge game-zone">
+            <span>🕹️ SCROLL ZONE 1: GAME ADVANCEMENT</span>
+          </div>
+
           <div className="tetris-board-frame">
             <div className="board-top-marquee">
-              <span>● 6-COLUMN SQUARE MATRIX ●</span>
+              <span>● 6-COLUMN PURE SQUARE MATRIX ●</span>
             </div>
 
             <div className="tetris-grid-container">
@@ -435,7 +445,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
             </div>
 
             <div className="board-sub-note">
-              <span>★ BLOCKS ARE ONLY CLICKABLE ONCE STOPPED ★</span>
+              <span>★ HOVER & WHEEL SCROLL TO ADVANCE PIECES ★</span>
             </div>
           </div>
 
@@ -443,13 +453,17 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
           <NextPieceBox nextProject={nextProject} />
         </div>
 
-        {/* RIGHT COLUMN: The Normal Divs (Cleared Projects & Queue) */}
-        <div className="arcade-queue-sidebar">
+        {/* SCROLL ZONE 2: Right Column (Projects List with independent scroll) */}
+        <div className="arcade-queue-sidebar scroll-zone-projects">
+          <div className="scroll-zone-badge projects-zone">
+            <span>📋 SCROLL ZONE 2: PROJECT DIRECTORY</span>
+          </div>
+
           <div className="queue-header">
             <div>
               <span className="queue-title">CLEARED REPOSITORIES</span>
               <p className="queue-sub">
-                FILL A ROW IN TETRIS TO DESTROY BLOCKS & UNLOCK NORMAL PROJECT SECTIONS
+                FILL A ROW TO DESTROY BLOCKS & UNLOCK PROJECTS (MULTIPLE CAN UNLOCK AT ONCE!)
               </p>
             </div>
             <span className="unlocked-counter-badge">
@@ -457,7 +471,8 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
             </span>
           </div>
 
-          <div className="project-queue-list">
+          {/* Independent scroll container for projects */}
+          <div className="project-queue-list custom-scrollbar">
             {PROJECTS.map((project) => {
               const isCleared = clearedProjectIds.includes(project.id);
               const isLandedOnBoard = landedPieces.some(

@@ -7,15 +7,15 @@ export const PROJECTS: ProjectItem[] = [
   {
     id: 'decision-trees',
     title: 'DECISION-TREES',
-    type: 'L',
-    color: '#00f0f0',
-    accentColor: '#00b8b8',
+    type: 'T',
+    color: '#c084fc',
+    accentColor: '#9333ea',
     tagline: 'Visualizer & Tree Generator for Sorting Algorithms',
     description: 'Tool that generates and visualizes decision trees for comparison-based algorithms. Implements automated export runners, interactive graph visualizers, and state trees for algorithm analysis.',
     tags: ['Python', 'Algorithms', 'Data Structures', 'Graphviz'],
     solvedCells: [
-      { x: 0, y: 7 }, { x: 1, y: 7 }, { x: 2, y: 7 }, { x: 3, y: 7 },
-      { x: 0, y: 6 }, { x: 1, y: 6 }
+      { x: 1, y: 7 }, { x: 2, y: 7 }, { x: 3, y: 7 },
+      { x: 2, y: 6 }
     ],
     metrics: 'Active // Open Source',
     githubUrl: 'https://github.com/clancydesilva/decision-trees',
@@ -25,7 +25,7 @@ export const PROJECTS: ProjectItem[] = [
   {
     id: 'appace',
     title: 'APPACE',
-    type: 'J',
+    type: 'O',
     color: '#facc15',
     accentColor: '#ca8a04',
     tagline: 'Earn Screen Time As Hours Pass',
@@ -33,7 +33,7 @@ export const PROJECTS: ProjectItem[] = [
     tags: ['TypeScript', 'Productivity', 'State Machine', 'React'],
     solvedCells: [
       { x: 4, y: 7 }, { x: 5, y: 7 },
-      { x: 2, y: 6 }, { x: 3, y: 6 }, { x: 4, y: 6 }, { x: 5, y: 6 }
+      { x: 4, y: 6 }, { x: 5, y: 6 }
     ],
     metrics: 'TypeScript Core',
     githubUrl: 'https://github.com/clancydesilva/appace',
@@ -44,14 +44,14 @@ export const PROJECTS: ProjectItem[] = [
     id: 'weather-or-not',
     title: 'WEATHER-OR-NOT',
     type: 'L',
-    color: '#c084fc',
-    accentColor: '#9333ea',
+    color: '#fb923c',
+    accentColor: '#ea580c',
     tagline: 'Machine Learning Weather Forecasting',
     description: 'Variety of machine learning models trained on historical meteorological data to predict weather conditions, precipitation likelihood, temperature trends, and seasonal shifts.',
     tags: ['Python', 'Machine Learning', 'Data Science', 'Scikit-Learn'],
     solvedCells: [
-      { x: 0, y: 5 }, { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 3, y: 5 },
-      { x: 0, y: 4 }, { x: 1, y: 4 }
+      { x: 0, y: 7 }, { x: 0, y: 6 }, { x: 0, y: 5 },
+      { x: 1, y: 5 }
     ],
     metrics: 'ML Trained Models',
     githubUrl: 'https://github.com/clancydesilva/weather-or-not',
@@ -61,15 +61,15 @@ export const PROJECTS: ProjectItem[] = [
   {
     id: 'pygame-game',
     title: 'PYGAME TURN-BASED',
-    type: 'J',
+    type: 'S',
     color: '#4ade80',
     accentColor: '#16a34a',
     tagline: 'Turn-Based Strategy & Terminal Engine',
     description: 'Python-based turn-based game played on the terminal and Pygame display. Features combat logic, turn sequencing, stat progression, procedural encounters, and retro sound cues.',
     tags: ['Python', 'Pygame', 'Game Dev', 'Turn-Based RPG'],
     solvedCells: [
-      { x: 4, y: 5 }, { x: 5, y: 5 },
-      { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }, { x: 5, y: 4 }
+      { x: 2, y: 5 }, { x: 3, y: 5 },
+      { x: 1, y: 6 }, { x: 2, y: 6 }
     ],
     metrics: 'Turn-Based Engine',
     githubUrl: 'https://github.com/clancydesilva/pygame-game',
@@ -79,15 +79,14 @@ export const PROJECTS: ProjectItem[] = [
   {
     id: 'game-start',
     title: 'GAME-START',
-    type: 'L',
-    color: '#fb923c',
-    accentColor: '#ea580c',
+    type: 'I',
+    color: '#00f0f0',
+    accentColor: '#00b8b8',
     tagline: 'Personal Retro Game Portfolio',
     description: 'Interactive arcade developer portfolio built with React 19, TypeScript, and Vite. Features 6-column falling Tetris project pieces, Web Audio 8-bit sound synthesis, and Pac-Man page sweep transitions.',
     tags: ['React 19', 'TypeScript', 'Vite', 'Web Audio API'],
     solvedCells: [
-      { x: 2, y: 3 }, { x: 3, y: 3 }, { x: 4, y: 3 }, { x: 5, y: 3 },
-      { x: 4, y: 2 }, { x: 5, y: 2 }
+      { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }
     ],
     metrics: '60 FPS Hardware Accel',
     githubUrl: 'https://github.com/clancydesilva/game-start',
@@ -97,15 +96,15 @@ export const PROJECTS: ProjectItem[] = [
   {
     id: 'do-you-remember',
     title: 'DO-YOU-REMEMBER',
-    type: 'J',
-    color: '#38bdf8',
-    accentColor: '#0284c7',
+    type: 'Z',
+    color: '#f87171',
+    accentColor: '#dc2626',
     tagline: 'Smart Task Manager & Reminders',
     description: 'To-do list and memory application with built-in reminders, priority tags, categorization filters, and clean state persistence for daily task tracking.',
     tags: ['TypeScript', 'Task Management', 'LocalStorage', 'UI/UX'],
     solvedCells: [
-      { x: 0, y: 3 }, { x: 1, y: 3 },
-      { x: 0, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 3, y: 2 }
+      { x: 4, y: 4 }, { x: 5, y: 4 },
+      { x: 4, y: 5 }, { x: 3, y: 6 }
     ],
     metrics: 'Category Filters',
     githubUrl: 'https://github.com/clancydesilva/do-you-remember',
@@ -115,15 +114,15 @@ export const PROJECTS: ProjectItem[] = [
   {
     id: 'JavaScript-Web-Game',
     title: 'JS WEB ARCADE',
-    type: 'L',
-    color: '#f87171',
-    accentColor: '#dc2626',
+    type: 'J',
+    color: '#38bdf8',
+    accentColor: '#0284c7',
     tagline: 'HTML5 Canvas Browser Game',
     description: 'Interactive browser-based game built with pure JavaScript and HTML5 Canvas without heavy external game libraries. Features custom collision detection, sprite animations, and score loops.',
     tags: ['JavaScript', 'HTML5 Canvas', 'Game Loop', 'Physics'],
     solvedCells: [
-      { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 },
-      { x: 0, y: 0 }, { x: 1, y: 0 }
+      { x: 0, y: 3 }, { x: 1, y: 3 }, { x: 2, y: 3 },
+      { x: 0, y: 2 }
     ],
     metrics: 'Native HTML5 Canvas',
     githubUrl: 'https://github.com/clancydesilva/JavaScript-Web-Game',
@@ -133,15 +132,15 @@ export const PROJECTS: ProjectItem[] = [
   {
     id: 'DB-Backed-Website',
     title: 'DB-BACKED PLATFORM',
-    type: 'J',
+    type: 'O',
     color: '#34d399',
     accentColor: '#059669',
     tagline: 'Full-Stack Database Architecture',
     description: 'Full-stack database-backed web application featuring relational schema modeling, parameterized SQL queries, authentication session flows, and CRUD REST endpoints.',
     tags: ['Python', 'SQL', 'Databases', 'Full Stack'],
     solvedCells: [
-      { x: 4, y: 1 }, { x: 5, y: 1 },
-      { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }
+      { x: 3, y: 3 }, { x: 4, y: 3 }, { x: 5, y: 3 },
+      { x: 4, y: 2 }, { x: 5, y: 2 }
     ],
     metrics: 'Relational DB & SQL',
     githubUrl: 'https://github.com/clancydesilva/DB-Backed-Website',
