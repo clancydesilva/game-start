@@ -1,0 +1,1975 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --bg-deep: #0a0a10;
+  --bg-surface: #12131c;
+  --bg-card: #181926;
+  --border-arcade: #2d2f45;
+  --border-glow: #aa3bff;
+  --text-main: #e2e8f0;
+  --text-dim: #7e8299;
+  --text-bright: #ffffff;
+
+  /* Arcade Tetris Palette */
+  --tetris-cyan: #00f0f0;
+  --tetris-yellow: #f0f000;
+  --tetris-purple: #a000f0;
+  --tetris-green: #00f000;
+  --tetris-red: #f00000;
+  --tetris-blue: #0000f0;
+  --tetris-orange: #f0a000;
+  --pacman-yellow: #ffde00;
+
+  --pixel-font: 'Press Start 2P', monospace, system-ui;
+  --shadow-neon: 0 0 16px rgba(170, 59, 255, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  font-family: var(--pixel-font);
+  font-size: 12px;
+  line-height: 1.6;
+  letter-spacing: 0.5px;
+  overflow-x: hidden;
+  user-select: none;
+  -webkit-font-smoothing: none;
+}
+
+/* =========================================================
+   CRT SCANLINE & PHOSPHOR OVERLAY
+========================================================= */
+.crt-overlay-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.crt-scanlines {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.28) 50%
+  );
+  background-size: 100% 4px;
+  opacity: 0.8;
+}
+
+.crt-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0) 60%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+}
+
+.crt-flicker {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 16, 16, 0.02);
+  animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+  0% { opacity: 0.97; }
+  50% { opacity: 1; }
+  100% { opacity: 0.98; }
+}
+
+/* =========================================================
+   TOP SKILLS MARQUEE TICKER
+========================================================= */
+.skills-ticker-wrapper {
+  display: flex;
+  align-items: center;
+  background: #000;
+  border-bottom: 2px solid var(--border-arcade);
+  height: 38px;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+
+.ticker-label {
+  background: var(--border-glow);
+  color: #fff;
+  padding: 0 16px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  white-space: nowrap;
+  font-weight: bold;
+  box-shadow: 2px 0 10px rgba(170, 59, 255, 0.5);
+  z-index: 10;
+}
+
+.blink-text {
+  animation: blink 0.8s infinite step-start;
+  margin-right: 6px;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.ticker-track {
+  overflow: hidden;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.ticker-content {
+  display: inline-flex;
+  animation: ticker-slide 32s linear infinite;
+}
+
+.ticker-content:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  font-size: 10px;
+  color: var(--tetris-yellow);
+}
+
+.ticker-star {
+  color: var(--tetris-cyan);
+}
+
+.ticker-coin {
+  font-size: 12px;
+}
+
+/* =========================================================
+   ARCADE CABINET HUD NAVBAR
+========================================================= */
+.arcade-navbar {
+  background: var(--bg-surface);
+  border-bottom: 4px solid var(--border-arcade);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.navbar-top-bezel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 2px solid var(--border-arcade);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.player-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+}
+
+.blink-beacon {
+  color: var(--tetris-green);
+  animation: blink 0.8s infinite step-start;
+}
+
+.player-title {
+  color: var(--text-bright);
+}
+
+.player-coins {
+  background: #1e2030;
+  padding: 4px 8px;
+  border: 1px solid var(--border-arcade);
+  color: var(--tetris-yellow);
+  font-size: 9px;
+}
+
+.navbar-score-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #000;
+  border: 2px solid var(--border-arcade);
+  padding: 6px 16px;
+}
+
+.hud-title {
+  color: var(--tetris-red);
+  font-size: 10px;
+}
+
+.hud-number {
+  color: var(--tetris-yellow);
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.navbar-toggles {
+  display: flex;
+  gap: 8px;
+}
+
+.retro-toggle-btn {
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  padding: 6px 12px;
+  background: #181926;
+  color: var(--text-dim);
+  border: 2px solid var(--border-arcade);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.retro-toggle-btn.active {
+  background: var(--border-glow);
+  color: #fff;
+  border-color: #fff;
+  box-shadow: 0 0 8px rgba(170, 59, 255, 0.5);
+}
+
+.navbar-nav-tabs {
+  display: flex;
+  overflow-x: auto;
+  background: #090a10;
+  border-bottom: 2px solid var(--border-arcade);
+}
+
+.nav-tab-btn {
+  font-family: var(--pixel-font);
+  font-size: 10px;
+  padding: 14px 18px;
+  background: transparent;
+  color: var(--text-dim);
+  border: none;
+  border-right: 1px solid var(--border-arcade);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  position: relative;
+  transition: all 0.15s;
+}
+
+.nav-tab-btn:hover {
+  background: rgba(170, 59, 255, 0.1);
+  color: var(--text-bright);
+}
+
+.nav-tab-btn.is-active {
+  background: var(--bg-surface);
+  color: var(--tetris-cyan);
+  box-shadow: inset 0 -3px 0 var(--tetris-cyan);
+}
+
+.nav-active-pip {
+  font-size: 8px;
+  color: var(--tetris-cyan);
+}
+
+/* =========================================================
+   3D PIXEL TETRIS BLOCK SHADING
+========================================================= */
+.tetris-pixel-block {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid #000;
+  box-shadow: 
+    inset 4px 4px 0px rgba(255, 255, 255, 0.75),
+    inset -4px -4px 0px rgba(0, 0, 0, 0.65);
+  transition: transform 0.15s, filter 0.15s;
+}
+
+.tetris-pixel-block:hover {
+  filter: brightness(1.2);
+  transform: scale(1.05);
+  z-index: 5;
+}
+
+.tetris-pixel-block.is-ghost {
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  box-shadow: none;
+}
+
+.tetris-pixel-block.is-solved {
+  animation: pulseSolved 2s infinite alternate;
+}
+
+@keyframes pulseSolved {
+  0% { filter: brightness(1); }
+  100% { filter: brightness(1.2) drop-shadow(0 0 4px rgba(255, 255, 255, 0.4)); }
+}
+
+.block-label {
+  font-size: 8px;
+  color: #000;
+  font-weight: bold;
+  opacity: 0.8;
+}
+
+/* =========================================================
+   STAGE SECTION HEADERS
+========================================================= */
+.arcade-cabinet-viewport {
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: calc(100vh - 160px);
+  padding: 30px 20px 60px;
+}
+
+.arcade-cabinet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 3px solid var(--border-arcade);
+  padding-bottom: 20px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.arcade-sub {
+  display: block;
+  font-size: 9px;
+  color: var(--border-glow);
+  margin-bottom: 8px;
+}
+
+.arcade-main-title {
+  font-size: 26px;
+  color: var(--text-bright);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.title-tetris { color: var(--tetris-cyan); }
+.title-lab { color: var(--tetris-yellow); }
+.title-lead { color: var(--tetris-green); }
+.title-docs { color: var(--border-glow); }
+
+.arcade-instruction {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* HUD Panel */
+.arcade-hud-panel {
+  display: flex;
+  gap: 14px;
+  background: #000;
+  border: 2px solid var(--border-arcade);
+  padding: 10px 16px;
+  flex-wrap: wrap;
+}
+
+.hud-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hud-label {
+  font-size: 8px;
+  color: var(--text-dim);
+}
+
+.hud-value {
+  font-size: 12px;
+  color: var(--text-bright);
+}
+
+.hud-score { color: var(--tetris-yellow); }
+.hud-lines { color: var(--tetris-cyan); }
+.hud-active { color: var(--tetris-orange); animation: blink 1s infinite step-start; }
+.hud-solved { color: var(--tetris-green); font-weight: bold; }
+
+/* Control Buttons Bar */
+.arcade-controls-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* Generic Retro Buttons */
+.retro-btn {
+  font-family: var(--pixel-font);
+  font-size: 10px;
+  padding: 10px 18px;
+  background: var(--bg-card);
+  color: var(--text-bright);
+  border: 3px solid #000;
+  box-shadow: 
+    inset 2px 2px 0px rgba(255, 255, 255, 0.4),
+    inset -2px -2px 0px rgba(0, 0, 0, 0.5),
+    3px 3px 0px #000;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.1s;
+}
+
+.retro-btn:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 
+    inset 2px 2px 0px rgba(255, 255, 255, 0.6),
+    inset -2px -2px 0px rgba(0, 0, 0, 0.5),
+    4px 4px 0px #000;
+}
+
+.retro-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 
+    inset 2px 2px 0px rgba(0, 0, 0, 0.6),
+    inset -2px -2px 0px rgba(255, 255, 255, 0.2),
+    1px 1px 0px #000;
+}
+
+.retro-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.retro-btn.btn-sm {
+  padding: 8px 14px;
+  font-size: 9px;
+}
+
+.retro-btn.btn-xs {
+  padding: 6px 10px;
+  font-size: 8px;
+}
+
+.retro-btn.btn-large {
+  padding: 14px 24px;
+  font-size: 13px;
+}
+
+.retro-btn.btn-block {
+  width: 100%;
+}
+
+.retro-btn.btn-primary {
+  background: var(--border-glow);
+  color: #fff;
+}
+
+.retro-btn.btn-secondary {
+  background: var(--tetris-cyan);
+  color: #000;
+}
+
+.retro-btn.btn-outline {
+  background: transparent;
+  border-color: var(--border-arcade);
+}
+
+.btn-tiny {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  padding: 4px 8px;
+  background: #000;
+  color: var(--tetris-cyan);
+  border: 1px solid var(--border-arcade);
+  cursor: pointer;
+}
+
+.btn-tiny:hover {
+  background: var(--tetris-cyan);
+  color: #000;
+}
+
+/* =========================================================
+   TETRIS 6-COLUMN SOLVED BOARD LAYOUT
+========================================================= */
+.arcade-arena-grid {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 30px;
+}
+
+@media (max-width: 960px) {
+  .arcade-arena-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tetris-board-frame {
+  background: #000;
+  border: 4px solid var(--border-arcade);
+  padding: 16px;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.8), inset 0 0 16px rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+}
+
+.board-top-marquee {
+  text-align: center;
+  font-size: 9px;
+  color: var(--tetris-cyan);
+  border-bottom: 2px dashed var(--border-arcade);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.tetris-grid-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.grid-col-headers {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.col-header-cell {
+  text-align: center;
+  font-size: 8px;
+  color: var(--text-dim);
+  padding: 2px 0;
+}
+
+.grid-matrix-body {
+  display: grid;
+  grid-template-rows: repeat(8, 1fr);
+  gap: 4px;
+  background: #090a12;
+  padding: 6px;
+  border: 2px solid var(--border-arcade);
+}
+
+.grid-matrix-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+
+.grid-cell-slot {
+  aspect-ratio: 1 / 1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.grid-cell-slot.cell-highlighted {
+  border-color: var(--text-bright);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.empty-cell-dot {
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.falling-cell-anim {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+}
+
+.falling-cell-anim.is-falling {
+  transform: translateY(-40px);
+  opacity: 0.25;
+}
+
+.falling-cell-anim.is-landed {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.board-solved-banner {
+  margin-top: 14px;
+  background: linear-gradient(90deg, #aa3bff, #00f0f0);
+  color: #000;
+  padding: 10px;
+  text-align: center;
+  border: 2px solid #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: bannerGlow 1s infinite alternate;
+}
+
+@keyframes bannerGlow {
+  0% { box-shadow: 0 0 8px rgba(0, 240, 240, 0.5); }
+  100% { box-shadow: 0 0 20px rgba(170, 59, 255, 0.9); }
+}
+
+.solved-flash {
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.solved-bonus {
+  font-size: 9px;
+}
+
+/* Projects Roster Sidebar */
+.arcade-queue-sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border-arcade);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+}
+
+.queue-title {
+  font-size: 11px;
+  color: var(--tetris-yellow);
+}
+
+.queue-sub {
+  font-size: 8px;
+  color: var(--text-dim);
+}
+
+.project-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.project-queue-card {
+  display: flex;
+  background: var(--bg-card);
+  border: 2px solid var(--border-arcade);
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.project-queue-card:hover,
+.project-queue-card.card-hovered {
+  border-color: var(--text-bright);
+  transform: translateX(4px);
+  background: #202235;
+}
+
+.card-left-badge {
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-weight: bold;
+  font-size: 16px;
+  border-right: 2px solid #000;
+}
+
+.card-main-info {
+  flex: 1;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.card-points {
+  font-size: 9px;
+  color: var(--tetris-yellow);
+}
+
+.card-tagline {
+  font-size: 9px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.card-tags-mini {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.mini-tag {
+  font-size: 7px;
+  background: #10111a;
+  padding: 2px 6px;
+  color: var(--tetris-cyan);
+  border: 1px solid var(--border-arcade);
+}
+
+.card-status-pill {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  font-size: 8px;
+}
+
+.pill-locked { color: var(--tetris-green); }
+.pill-queue { color: var(--text-dim); }
+
+/* =========================================================
+   RETRO MODAL (PROJECT & COLLAB)
+========================================================= */
+.retro-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.retro-modal-window {
+  background: var(--bg-surface);
+  border: 4px solid var(--border-glow);
+  box-shadow: 0 0 32px rgba(170, 59, 255, 0.4), inset 0 0 16px rgba(0, 0, 0, 0.8);
+  width: 640px;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.retro-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #090a12;
+  padding: 12px 16px;
+  border-bottom: 3px solid;
+}
+
+.modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-status-dot {
+  width: 10px;
+  height: 10px;
+  border: 1px solid #000;
+}
+
+.modal-header-title {
+  font-size: 11px;
+  color: #fff;
+}
+
+.retro-modal-close-btn {
+  font-family: var(--pixel-font);
+  font-size: 11px;
+  background: transparent;
+  color: var(--tetris-red);
+  border: none;
+  cursor: pointer;
+}
+
+.retro-modal-close-btn:hover {
+  color: #fff;
+}
+
+.retro-modal-body {
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modal-hero-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.modal-tetromino-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #000;
+  padding: 12px;
+  border: 2px solid var(--border-arcade);
+}
+
+.preview-shape-matrix {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+}
+
+.preview-type-badge {
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.modal-title-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-badge-row {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-score-badge {
+  background: var(--tetris-yellow);
+  color: #000;
+  font-size: 9px;
+  padding: 3px 6px;
+  font-weight: bold;
+}
+
+.modal-metric-badge {
+  background: #25283d;
+  color: var(--tetris-cyan);
+  font-size: 8px;
+  padding: 3px 6px;
+}
+
+.modal-project-title {
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.modal-tagline {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.modal-divider {
+  height: 2px;
+  background: var(--border-arcade);
+}
+
+.modal-subheading {
+  font-size: 9px;
+  color: var(--border-glow);
+  margin-bottom: 8px;
+}
+
+.modal-desc-text {
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--text-main);
+}
+
+.modal-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.modal-tag-chip {
+  background: #10111a;
+  border: 1px solid var(--border-arcade);
+  color: var(--tetris-cyan);
+  font-size: 8px;
+  padding: 4px 8px;
+}
+
+.modal-actions-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.retro-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  background: #090a12;
+  padding: 10px 16px;
+  border-top: 2px solid var(--border-arcade);
+  font-size: 8px;
+  color: var(--text-dim);
+}
+
+/* =========================================================
+   PAC-MAN PAGE TRANSITIONS (FULLSCREEN CHOMP)
+========================================================= */
+.pacman-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pacman-screen-eater {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  background: #000;
+  border-right: 4px solid var(--pacman-yellow);
+}
+
+.pacman-pellet-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  transform: translateY(-50%);
+  height: 20px;
+  pointer-events: none;
+}
+
+.pacman-pellet {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  background: #ffb897;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #ffb897;
+  transition: opacity 0.1s;
+}
+
+.pacman-pellet.power-pellet {
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  box-shadow: 0 0 16px #fff;
+}
+
+.pacman-pellet.eaten {
+  opacity: 0;
+}
+
+.pacman-character {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100px;
+  height: 100px;
+  z-index: 10;
+}
+
+.pacman-mouth-top,
+.pacman-mouth-bottom {
+  position: absolute;
+  width: 100px;
+  height: 50px;
+  background: var(--pacman-yellow);
+  box-shadow: 0 0 20px rgba(255, 222, 0, 0.8);
+}
+
+.pacman-mouth-top {
+  top: 0;
+  border-radius: 50px 50px 0 0;
+  transform-origin: bottom center;
+  animation: chompTop 0.22s infinite alternate ease-in-out;
+}
+
+.pacman-mouth-bottom {
+  bottom: 0;
+  border-radius: 0 0 50px 50px;
+  transform-origin: top center;
+  animation: chompBottom 0.22s infinite alternate ease-in-out;
+}
+
+@keyframes chompTop {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-35deg); }
+}
+
+@keyframes chompBottom {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(35deg); }
+}
+
+.pacman-eye {
+  position: absolute;
+  top: 20px;
+  left: 45px;
+  width: 12px;
+  height: 12px;
+  background: #000;
+  border-radius: 50%;
+  z-index: 12;
+}
+
+.pacman-loading-text {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--pacman-yellow);
+  text-shadow: 0 0 10px var(--pacman-yellow);
+}
+
+/* =========================================================
+   IDEA LAB & TUMBLING TETRIS PIECES
+========================================================= */
+.idea-lab-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tumbling-canvas-container {
+  background: #000;
+  border: 4px solid var(--border-arcade);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.9);
+}
+
+.tumbling-header-note {
+  text-align: center;
+  font-size: 8px;
+  color: var(--tetris-yellow);
+  background: #0b0c14;
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--border-arcade);
+}
+
+.tumbling-canvas {
+  width: 100%;
+  height: 280px;
+  display: block;
+  cursor: grab;
+}
+
+.tumbling-canvas:active {
+  cursor: grabbing;
+}
+
+.ideas-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.idea-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-arcade);
+  border-top: 5px solid;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.idea-card:hover,
+.idea-card.idea-card-selected {
+  border-color: var(--text-bright);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.idea-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.idea-type-badge {
+  color: #000;
+  font-size: 8px;
+  font-weight: bold;
+  padding: 3px 8px;
+}
+
+.idea-stage-pill {
+  font-size: 8px;
+  color: var(--text-dim);
+  border: 1px solid var(--border-arcade);
+  padding: 2px 6px;
+}
+
+.idea-title {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.idea-pitch-text {
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--text-main);
+  flex: 1;
+}
+
+.idea-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.idea-tag-chip {
+  font-size: 8px;
+  background: #0b0c14;
+  color: var(--tetris-cyan);
+  padding: 3px 6px;
+  border: 1px solid var(--border-arcade);
+}
+
+.idea-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-arcade);
+  padding-top: 14px;
+}
+
+.retro-btn-resonance {
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  background: #1e1b29;
+  color: #ff3366;
+  border: 2px solid #ff3366;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.retro-btn-resonance:hover,
+.retro-btn-resonance.is-resonated {
+  background: #ff3366;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255, 51, 102, 0.6);
+  transform: scale(1.05);
+}
+
+.resonance-heart {
+  font-size: 11px;
+}
+
+/* Collab Modal Form */
+.collab-idea-banner {
+  background: #0d0e17;
+  border: 2px solid var(--border-arcade);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.collab-pill {
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.collab-idea-title {
+  font-size: 14px;
+}
+
+.collab-idea-pitch {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.collab-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.retro-label {
+  font-size: 9px;
+  color: var(--border-glow);
+}
+
+.input-with-prefix {
+  display: flex;
+  align-items: center;
+  background: #000;
+  border: 2px solid var(--border-arcade);
+}
+
+.input-prefix {
+  padding: 0 10px;
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+.retro-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: var(--pixel-font);
+  font-size: 10px;
+  padding: 10px;
+  outline: none;
+}
+
+.retro-textarea {
+  background: #000;
+  border: 2px solid var(--border-arcade);
+  color: #fff;
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  line-height: 1.6;
+  padding: 10px;
+  outline: none;
+  resize: vertical;
+}
+
+.collab-preview-box {
+  background: #000;
+  border: 1px dashed var(--border-arcade);
+  padding: 10px;
+}
+
+.preview-label-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 8px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.issue-preview-pre {
+  font-family: monospace;
+  font-size: 9px;
+  color: var(--tetris-green);
+  white-space: pre-wrap;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+/* =========================================================
+   STANDALONE IDEA LAB COMPONENT & DOCS / PRODUCT HUNT
+========================================================= */
+.docs-launch-section {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.ph-launch-card {
+  background: linear-gradient(135deg, #1d172b, #2b1d3d);
+  border: 3px solid #ff6154;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 0 24px rgba(255, 97, 84, 0.25);
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.ph-cat-badge {
+  font-size: 9px;
+  color: #ff6154;
+  margin-bottom: 8px;
+}
+
+.ph-title {
+  font-size: 18px;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.ph-tagline {
+  font-size: 10px;
+  color: #cbd5e1;
+  max-width: 600px;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.ph-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ph-rank-badge {
+  background: #ff6154;
+  color: #fff;
+  font-size: 8px;
+  padding: 4px 8px;
+  font-weight: bold;
+}
+
+.ph-pill {
+  background: rgba(0, 0, 0, 0.4);
+  color: #e2e8f0;
+  font-size: 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-arcade);
+}
+
+.ph-upvote-btn {
+  font-family: var(--pixel-font);
+  font-size: 11px;
+  background: #000;
+  color: #ff6154;
+  border: 3px solid #ff6154;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ph-upvote-btn:hover,
+.ph-upvote-btn.voted {
+  background: #ff6154;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(255, 97, 84, 0.8);
+  transform: scale(1.05);
+}
+
+.ph-triangle {
+  font-size: 14px;
+}
+
+.docs-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .docs-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.docs-code-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.docs-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-arcade);
+}
+
+.docs-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0e0f18;
+  padding: 10px 14px;
+  border-bottom: 2px solid var(--border-arcade);
+}
+
+.docs-card-title {
+  font-size: 9px;
+  color: var(--tetris-cyan);
+}
+
+.docs-code-block {
+  padding: 14px;
+  font-family: monospace;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #4ade80;
+  overflow-x: auto;
+}
+
+.preview-container-box {
+  background: #000;
+  border: 3px solid var(--border-arcade);
+}
+
+.preview-top-bar {
+  background: #0b0c14;
+  padding: 10px;
+  text-align: center;
+  font-size: 9px;
+  color: var(--border-glow);
+  border-bottom: 2px solid var(--border-arcade);
+}
+
+.preview-widget-mount {
+  padding: 16px;
+}
+
+/* Standalone Idea Lab Widget Styles */
+.standalone-idealab-root {
+  background: #0e0f18;
+  border: 3px solid var(--border-glow);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sil-badge {
+  font-size: 8px;
+  color: var(--border-glow);
+  margin-bottom: 6px;
+}
+
+.sil-title {
+  font-size: 13px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.sil-sub {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.sil-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.sil-card {
+  background: #141522;
+  border: 1px solid var(--border-arcade);
+  border-left: 4px solid;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sil-card-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+}
+
+.sil-stage {
+  color: var(--text-dim);
+}
+
+.sil-card-title {
+  font-size: 11px;
+  color: #fff;
+}
+
+.sil-card-pitch {
+  font-size: 9px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.sil-tags {
+  display: flex;
+  gap: 4px;
+}
+
+.sil-chip {
+  font-size: 7px;
+  background: #000;
+  color: var(--tetris-cyan);
+  padding: 2px 4px;
+}
+
+.sil-card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.sil-btn-res {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  background: transparent;
+  color: #ff3366;
+  border: 1px solid #ff3366;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.sil-btn-res.active {
+  background: #ff3366;
+  color: #fff;
+}
+
+.sil-btn-collab {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  background: var(--tetris-cyan);
+  color: #000;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* =========================================================
+   LEADERBOARD & 3-INITIALS CONTACT
+========================================================= */
+.leaderboard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.leaderboard-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 28px;
+}
+
+@media (max-width: 960px) {
+  .leaderboard-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.arcade-scores-table-box {
+  background: #000;
+  border: 4px solid var(--border-arcade);
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+}
+
+.table-top-marquee {
+  background: #0c0d16;
+  padding: 12px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--tetris-yellow);
+  border-bottom: 2px solid var(--border-arcade);
+}
+
+.retro-scores-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.retro-scores-table th {
+  padding: 12px 14px;
+  font-size: 9px;
+  color: var(--tetris-cyan);
+  border-bottom: 2px solid var(--border-arcade);
+}
+
+.retro-scores-table td {
+  padding: 12px 14px;
+  font-size: 9px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.score-row.rank-1 .cell-score { color: var(--tetris-yellow); font-weight: bold; }
+.score-row.rank-2 .cell-score { color: #e2e8f0; }
+.score-row.rank-3 .cell-score { color: #d97706; }
+
+.score-row.user-entry {
+  background: rgba(170, 59, 255, 0.25);
+  animation: pulseSolved 1s infinite alternate;
+}
+
+.cell-init {
+  color: var(--tetris-green);
+  font-weight: bold;
+}
+
+.role-tag {
+  background: #141524;
+  padding: 3px 6px;
+  font-size: 8px;
+  color: var(--text-dim);
+}
+
+.table-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0c0d16;
+  padding: 12px 16px;
+  border-top: 2px solid var(--border-arcade);
+  font-size: 8px;
+  color: var(--text-dim);
+}
+
+.direct-email-link {
+  color: var(--tetris-yellow);
+  text-decoration: none;
+}
+
+.direct-email-link:hover {
+  text-decoration: underline;
+}
+
+/* Initials Terminal Box */
+.initials-terminal-box {
+  background: var(--bg-card);
+  border: 4px solid var(--border-arcade);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border-arcade);
+  padding-bottom: 10px;
+  margin-bottom: 18px;
+}
+
+.terminal-title {
+  font-size: 10px;
+  color: var(--border-glow);
+}
+
+.terminal-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--tetris-green);
+  border-radius: 50%;
+  animation: blink 0.8s infinite step-start;
+}
+
+.initials-selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+  align-items: center;
+  background: #000;
+  padding: 16px;
+  border: 2px solid var(--border-arcade);
+}
+
+.selector-title {
+  font-size: 9px;
+  color: var(--tetris-yellow);
+}
+
+.slots-container {
+  display: flex;
+  gap: 16px;
+}
+
+.slot-wheel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.slot-arrow {
+  font-family: var(--pixel-font);
+  font-size: 10px;
+  background: #181926;
+  color: var(--tetris-cyan);
+  border: 1px solid var(--border-arcade);
+  width: 32px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot-arrow:hover {
+  background: var(--tetris-cyan);
+  color: #000;
+}
+
+.slot-digit {
+  font-size: 24px;
+  background: #0a0b12;
+  color: #fff;
+  border: 2px solid var(--border-glow);
+  width: 48px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 10px rgba(170, 59, 255, 0.5);
+}
+
+.terminal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.terminal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.terminal-success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 30px 10px;
+  gap: 14px;
+}
+
+.success-icon {
+  font-size: 36px;
+}
+
+.success-title {
+  font-size: 16px;
+  color: var(--tetris-yellow);
+}
+
+.success-desc {
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* =========================================================
+   GAME OVER SCREEN
+========================================================= */
+.game-over-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  position: relative;
+}
+
+.go-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+  background: #000;
+  border: 5px solid var(--tetris-red);
+  padding: 40px;
+  box-shadow: 0 0 40px rgba(240, 0, 0, 0.5), inset 0 0 20px rgba(240, 0, 0, 0.4);
+  max-width: 680px;
+  width: 100%;
+}
+
+.go-main-title {
+  font-size: 44px;
+  color: var(--tetris-red);
+  text-shadow: 0 0 20px rgba(240, 0, 0, 0.9);
+  animation: blink 1.2s infinite step-start;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 600px) {
+  .go-main-title {
+    font-size: 28px;
+  }
+}
+
+.go-sub-title {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.go-countdown-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.go-continue-prompt {
+  font-size: 14px;
+  color: var(--tetris-yellow);
+}
+
+.go-countdown-number {
+  font-size: 64px;
+  color: #fff;
+  text-shadow: 0 0 24px rgba(255, 255, 255, 0.8);
+}
+
+.go-countdown-number.is-zero {
+  color: var(--tetris-red);
+  animation: blink 0.4s infinite step-start;
+}
+
+.go-coin-hint {
+  font-size: 8px;
+  color: var(--text-dim);
+}
+
+.go-stats-panel {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  background: #0c0d16;
+  border: 2px solid var(--border-arcade);
+  padding: 16px;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .go-stats-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+.go-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.go-stat-label {
+  font-size: 8px;
+  color: var(--text-dim);
+}
+
+.go-stat-value {
+  font-size: 11px;
+}
+
+.text-gold { color: var(--tetris-yellow); }
+.text-cyan { color: var(--tetris-cyan); }
+.text-purple { color: var(--border-glow); }
+
+.go-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.go-insert-coin-btn {
+  background: var(--tetris-red);
+  border-color: #fff;
+  animation: coinGlow 1s infinite alternate;
+}
+
+@keyframes coinGlow {
+  0% { box-shadow: 0 0 10px rgba(240, 0, 0, 0.6); }
+  100% { box-shadow: 0 0 24px rgba(240, 0, 0, 1); }
+}
+
+.go-arcade-bezel {
+  font-size: 8px;
+  color: var(--text-dim);
+  border-top: 1px dashed var(--border-arcade);
+  padding-top: 12px;
+  width: 100%;
+}
+
+/* =========================================================
+   ARCADE CABINET FOOTER
+========================================================= */
+.arcade-cabinet-footer {
+  background: #090a12;
+  border-top: 4px solid var(--border-arcade);
+  padding: 24px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 9px;
+  color: var(--text-dim);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-coin-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--tetris-yellow);
+}
+
+.footer-credits {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.footer-social-links {
+  display: flex;
+  gap: 16px;
+}
+
+.footer-social-links a {
+  color: var(--tetris-cyan);
+  text-decoration: none;
+}
+
+.footer-social-links a:hover {
+  text-decoration: underline;
+}
