@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import type { ProjectItem, GridCell } from '../../types';
+import type { ProjectItem, GridCell, TetrominoType } from '../../types';
 import { PROJECTS, TETRIS_COLS, TETRIS_ROWS } from '../../utils/constants';
 import { TetrisBlock } from './TetrisBlock';
 import { NextPieceBox } from './NextPieceBox';
@@ -14,6 +14,11 @@ interface LandedPiece {
   project: ProjectItem;
   cells: GridCell[];
   isDestroyed: boolean;
+}
+
+interface DropMove {
+  type: TetrominoType;
+  targetX: number;
 }
 
 // Preset tetromino shapes (relative coordinates)
@@ -34,8 +39,69 @@ const PIECE_SHAPES: Record<string, GridCell[]> = {
   J: [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 2 }, { x: 1, y: 2 }]
 };
 
-// Target column for each project descent
-const TARGET_COLUMNS = [1, 4, 0, 1, 0, 3, 0, 4];
+// 4 curated, perfectly-fitting 7-piece sequences using I, O, T, L, J
+// Every sequence guarantees full 6-column row clears across all 7 projects!
+const FITTING_PATTERNS: DropMove[][] = [
+  // Pattern 1: O + I clears row 1; T + O clears row 2; I + L clears row 3
+  [
+    { type: 'O', targetX: 0 },
+    { type: 'I', targetX: 2 },
+    { type: 'T', targetX: 1 },
+    { type: 'O', targetX: 4 },
+    { type: 'I', targetX: 0 },
+    { type: 'L', targetX: 4 },
+    { type: 'J', targetX: 2 }
+  ],
+  // Pattern 2: I + O clears row 1; L + T clears row 2; O + I clears row 3
+  [
+    { type: 'I', targetX: 0 },
+    { type: 'O', targetX: 4 },
+    { type: 'L', targetX: 0 },
+    { type: 'T', targetX: 2 },
+    { type: 'O', targetX: 4 },
+    { type: 'I', targetX: 0 },
+    { type: 'T', targetX: 3 }
+  ],
+  // Pattern 3: T + L clears base; O + I clears mid; J + I clears top
+  [
+    { type: 'T', targetX: 0 },
+    { type: 'O', targetX: 3 },
+    { type: 'L', targetX: 4 },
+    { type: 'I', targetX: 0 },
+    { type: 'O', targetX: 4 },
+    { type: 'I', targetX: 0 },
+    { type: 'J', targetX: 2 }
+  ],
+  // Pattern 4: Triple O-base clear + I/O combo + T/J finish
+  [
+    { type: 'O', targetX: 0 },
+    { type: 'O', targetX: 2 },
+    { type: 'O', targetX: 4 },
+    { type: 'I', targetX: 0 },
+    { type: 'L', targetX: 4 },
+    { type: 'T', targetX: 0 },
+    { type: 'J', targetX: 3 }
+  ]
+];
+
+function generateRandomizedGame(): { projects: ProjectItem[]; targetColumns: number[] } {
+  // Pick one of the 4 fitting patterns at random
+  const pattern = FITTING_PATTERNS[Math.floor(Math.random() * FITTING_PATTERNS.length)];
+
+  // Shuffle project order so each refresh maps different projects to different fitting blocks
+  const shuffledProjects = [...PROJECTS].sort(() => Math.random() - 0.5);
+
+  const projects = shuffledProjects.map((proj, idx) => {
+    const move = pattern[idx % pattern.length];
+    return {
+      ...proj,
+      type: move.type
+    };
+  });
+
+  const targetColumns = shuffledProjects.map((_, idx) => pattern[idx % pattern.length].targetX);
+  return { projects, targetColumns };
+}
 
 /**
  * Calculates the lowest valid landing row (landingY) for a piece
@@ -78,6 +144,12 @@ function findLandingY(
 export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) => {
   const gameViewRef = useRef<HTMLDivElement>(null);
 
+  // Randomized fitting sequence generated on initial load or reset
+  const [gameSetup, setGameSetup] = useState<{
+    projects: ProjectItem[];
+    targetColumns: number[];
+  }>(() => generateRandomizedGame());
+
   // Active game state
   const [currentProjectIndex, setCurrentProjectIndex] = useState<number>(0);
   const [motionStep, setMotionStep] = useState<number>(0); // 0 to 4
@@ -91,11 +163,12 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
   const [autoPlay, setAutoPlay] = useState<boolean>(false);
   const [simultaneousUnlockBanner, setSimultaneousUnlockBanner] = useState<string | null>(null);
 
-  const totalProjects = PROJECTS.length;
+  const sessionProjects = gameSetup.projects;
+  const totalProjects = sessionProjects.length;
   const currentProject: ProjectItem | null =
-    currentProjectIndex < totalProjects ? PROJECTS[currentProjectIndex] : null;
+    currentProjectIndex < totalProjects ? sessionProjects[currentProjectIndex] : null;
   const nextProject: ProjectItem | null =
-    currentProjectIndex + 1 < totalProjects ? PROJECTS[currentProjectIndex + 1] : null;
+    currentProjectIndex + 1 < totalProjects ? sessionProjects[currentProjectIndex + 1] : null;
 
   // Get raw piece shape cells for active project
   const getPieceShape = useCallback((): GridCell[] => {
@@ -104,7 +177,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
   }, [currentProject]);
 
   // Target X column for active project
-  const targetX = TARGET_COLUMNS[currentProjectIndex % TARGET_COLUMNS.length];
+  const targetX = gameSetup.targetColumns[currentProjectIndex % gameSetup.targetColumns.length];
 
   // Calculate coordinates of the currently active falling piece based on motionStep
   const getActivePieceCells = useCallback((): GridCell[] => {
@@ -341,6 +414,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
 
   const handleResetGame = () => {
     sfx.playBeep();
+    setGameSetup(generateRandomizedGame());
     setCurrentProjectIndex(0);
     setMotionStep(0);
     setLandedPieces([]);
@@ -472,7 +546,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
         {/* SCROLL ZONE 1: Left Column Game View */}
         <div ref={gameViewRef} className="arcade-board-column scroll-zone-game">
           <div className="scroll-zone-badge game-zone">
-            <span>🕹️ SCROLL ZONE 1: GAME ADVANCEMENT</span>
+            <span>[▲▼] SCROLL ZONE 1: GAME ADVANCEMENT</span>
           </div>
 
           <div className="tetris-board-frame">
@@ -548,7 +622,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
         {/* SCROLL ZONE 2: Right Column (Projects List with independent scroll) */}
         <div className="arcade-queue-sidebar scroll-zone-projects">
           <div className="scroll-zone-badge projects-zone">
-            <span>📋 SCROLL ZONE 2: PROJECT DIRECTORY</span>
+            <span>[≡] SCROLL ZONE 2: PROJECT DIRECTORY</span>
           </div>
 
           <div className="queue-header">
@@ -565,7 +639,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
 
           {/* Independent scroll container for projects */}
           <div className="project-queue-list custom-scrollbar">
-            {PROJECTS.map((project) => {
+            {sessionProjects.map((project) => {
               const isCleared = clearedProjectIds.includes(project.id);
               const isLandedOnBoard = landedPieces.some(
                 (p) => p.project.id === project.id && !p.isDestroyed
@@ -599,7 +673,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
                       ) : isCurrentlyFalling ? (
                         <span className="badge-falling">FALLING...</span>
                       ) : (
-                        <span className="badge-locked">🔒 IN QUEUE</span>
+                        <span className="badge-locked">[LOCKED] IN QUEUE</span>
                       )}
                     </div>
                   </div>
@@ -634,7 +708,7 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
                           className="retro-btn btn-xs btn-outline"
                           onClick={() => setSelectedProject(project)}
                         >
-                          <span>INSPECT</span> 🔍
+                          <span>INSPECT [+]</span>
                         </button>
                       </div>
                     </div>

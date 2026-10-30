@@ -114,7 +114,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                 className="retro-btn btn-secondary"
                 onClick={() => sfx.playCoin()}
               >
-                <span>LIVE PREVIEW</span> 🎮
+                <span>LIVE PREVIEW</span> [▶]
               </a>
             )}
             <button

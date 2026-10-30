@@ -114,7 +114,7 @@ body {
 .navbar-top-controls.left {
   display: flex;
   align-items: center;
-  min-width: 180px;
+  width: 190px;
 }
 
 .arcade-credit-chip {
@@ -177,19 +177,21 @@ body {
 
 .navbar-top-controls.right {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 180px;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  width: 190px;
 }
 
 .navbar-score-box {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   background: #000;
   border: 2px solid var(--border-arcade);
   padding: 6px 12px;
+  width: 100%;
 }
 
 .hud-title {
@@ -206,12 +208,15 @@ body {
 .navbar-toggles {
   display: flex;
   gap: 6px;
+  width: 100%;
 }
 
 .retro-toggle-btn {
+  flex: 1;
+  text-align: center;
   font-family: var(--pixel-font);
   font-size: 8px;
-  padding: 6px 10px;
+  padding: 6px 8px;
   background: #181926;
   color: var(--text-dim);
   border: 2px solid var(--border-arcade);
@@ -395,18 +400,12 @@ body {
 }
 
 .simultaneous-unlock-banner {
-  background: linear-gradient(90deg, #aa3bff, #facc15);
-  color: #000;
+  background: var(--border-glow);
+  color: var(--bg-deep);
   padding: 6px 12px;
   font-size: 9px;
   font-weight: bold;
-  border: 2px solid #fff;
-  animation: bannerPulse 0.5s infinite alternate;
-}
-
-@keyframes bannerPulse {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.03); box-shadow: 0 0 14px rgba(250, 204, 21, 0.8); }
+  border: 2px solid var(--border-arcade);
 }
 
 /* Generic Retro Buttons */
@@ -735,21 +734,31 @@ body {
   padding-right: 6px;
 }
 
-/* Retro Custom Scrollbar */
+/* Retro Custom Scrollbars (Global & Scoped) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tetris-yellow) var(--bg-deep);
+}
+
+::-webkit-scrollbar,
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
+  height: 10px;
 }
 
+::-webkit-scrollbar-track,
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #090a12;
-  border: 1px solid var(--border-arcade);
+  background: var(--bg-deep);
+  border: 2px solid var(--border-arcade);
 }
 
+::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--border-arcade);
-  border: 1px solid var(--tetris-yellow);
+  border: 2px solid var(--tetris-yellow);
 }
 
+::-webkit-scrollbar-thumb:hover,
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--tetris-yellow);
 }
@@ -1072,7 +1081,7 @@ body {
 }
 
 /* =========================================================
-   PAC-MAN PAGE TRANSITIONS
+   PAC-MAN PAGE TRANSITIONS (8-BIT JAGGED PIXEL GRID)
 ========================================================= */
 .pacman-transition-overlay {
   position: fixed;
@@ -1109,74 +1118,43 @@ body {
   transform: translateY(-50%);
   width: 10px;
   height: 10px;
-  background: #ffb897;
-  border-radius: 50%;
-  box-shadow: 0 0 8px #ffb897;
+  background: var(--tetris-yellow);
+  border: 2px solid #000;
+  border-radius: 0;
   transition: opacity 0.1s;
 }
 
 .pacman-pellet.power-pellet {
   width: 18px;
   height: 18px;
-  background: #fff;
-  box-shadow: 0 0 16px #fff;
+  background: var(--text-bright);
+  border: 2px solid #000;
 }
 
 .pacman-pellet.eaten {
   opacity: 0;
 }
 
-.pacman-character {
+.pacman-character.pacman-pixel-grid {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 100px;
-  height: 100px;
+  width: 104px;
+  height: 104px;
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  grid-template-rows: repeat(13, 1fr);
   z-index: 10;
 }
 
-.pacman-mouth-top,
-.pacman-mouth-bottom {
-  position: absolute;
-  width: 100px;
-  height: 50px;
+.pacman-pixel-cell {
+  width: 100%;
+  height: 100%;
+}
+
+.pacman-pixel-cell.filled {
   background: var(--pacman-yellow);
-  box-shadow: 0 0 20px rgba(255, 222, 0, 0.8);
-}
-
-.pacman-mouth-top {
-  top: 0;
-  border-radius: 50px 50px 0 0;
-  transform-origin: bottom center;
-  animation: chompTop 0.22s infinite alternate ease-in-out;
-}
-
-.pacman-mouth-bottom {
-  bottom: 0;
-  border-radius: 0 0 50px 50px;
-  transform-origin: top center;
-  animation: chompBottom 0.22s infinite alternate ease-in-out;
-}
-
-@keyframes chompTop {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(-35deg); }
-}
-
-@keyframes chompBottom {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(35deg); }
-}
-
-.pacman-eye {
-  position: absolute;
-  top: 20px;
-  left: 45px;
-  width: 12px;
-  height: 12px;
-  background: #000;
-  border-radius: 50%;
-  z-index: 12;
+  box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.25);
 }
 
 .pacman-loading-text {
@@ -1827,7 +1805,7 @@ body {
    ARCADE CABINET FOOTER
 ========================================================= */
 .arcade-cabinet-footer {
-  background: #090a12;
+  background: var(--bg-surface);
   border-top: 4px solid var(--border-arcade);
   padding: 24px 32px;
   display: flex;
@@ -1837,8 +1815,7 @@ body {
   gap: 16px;
   font-size: 9px;
   color: var(--text-dim);
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .footer-coin-slot {

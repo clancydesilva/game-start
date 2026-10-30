@@ -6,6 +6,16 @@ interface NextPieceBoxProps {
   nextProject: ProjectItem | null;
 }
 
+const PREVIEW_SHAPES: Record<string, { x: number; y: number }[]> = {
+  T: [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }],
+  O: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }],
+  L: [{ x: 0, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 1, y: 2 }],
+  S: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }],
+  I: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }],
+  Z: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 1 }],
+  J: [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 2 }, { x: 1, y: 2 }]
+};
+
 export const NextPieceBox: React.FC<NextPieceBoxProps> = ({ nextProject }) => {
   if (!nextProject) {
     return (
@@ -16,15 +26,7 @@ export const NextPieceBox: React.FC<NextPieceBoxProps> = ({ nextProject }) => {
     );
   }
 
-  // Generate 4x2 mini display matrix for the next tetromino
-  const minX = Math.min(...nextProject.solvedCells.map((c) => c.x));
-  const minY = Math.min(...nextProject.solvedCells.map((c) => c.y));
-
-  const normalizedCells = nextProject.solvedCells.map((c) => ({
-    x: c.x - minX,
-    y: c.y - minY
-  }));
-
+  const normalizedCells = PREVIEW_SHAPES[nextProject.type] || PREVIEW_SHAPES.O;
   const maxX = Math.max(...normalizedCells.map((c) => c.x));
   const maxY = Math.max(...normalizedCells.map((c) => c.y));
 

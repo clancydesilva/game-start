@@ -22,10 +22,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleCrt
 }) => {
   const navItems: { id: PageView; label: string; icon: string }[] = [
-    { id: 'projects', label: 'TETRIS PROJECTS', icon: '▦' },
-    { id: 'idealab', label: 'IDEA LAB', icon: '⚗' },
-    { id: 'docs', label: 'NPM & DOCS', icon: '📦' },
-    { id: 'gameover', label: 'GAME OVER', icon: '💀' }
+    { id: 'projects', label: 'TETRIS PROJECTS', icon: '[#]' },
+    { id: 'idealab', label: 'IDEA LAB', icon: '[*]' },
+    { id: 'docs', label: 'NPM & DOCS', icon: '[>]' },
+    { id: 'gameover', label: 'GAME OVER', icon: '[X]' }
   ];
 
   return (

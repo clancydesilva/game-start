@@ -1,0 +1,72 @@
+/* =========================================================
+   STYLE 1: CRISP RETRO ARCADE PALETTE
+   Punchy, vibrant colors without harsh neon bloom
+========================================================= */
+
+:root {
+  --bg-deep: #0d0f17;
+  --bg-surface: #151824;
+  --bg-card: #1d2130;
+  --border-arcade: #323850;
+  --border-glow: #9b5de5;
+  --text-main: #e6edf5;
+  --text-dim: #8b95ab;
+  --text-bright: #ffffff;
+
+  /* Punchy Saturated Retro Tetris Palette (No Neon Glare) */
+  --tetris-cyan: #2ec4b6;
+  --tetris-yellow: #f4b942;
+  --tetris-purple: #a86add;
+  --tetris-green: #43aa8b;
+  --tetris-red: #e65f5c;
+  --tetris-blue: #4895ef;
+  --tetris-orange: #f38ba0;
+  --tetris-emerald: #38b000;
+  --pacman-yellow: #f4b942;
+}
+
+/* Crisp retro drop-shadow instead of heavy neon bloom */
+.arcade-large-name {
+  color: var(--text-bright);
+  text-shadow: 4px 4px 0px #06070b;
+}
+
+.retro-toggle-btn.active {
+  background: var(--border-glow);
+  color: var(--text-bright);
+  border-color: var(--text-bright);
+  box-shadow: none;
+}
+
+.simultaneous-unlock-banner {
+  background: var(--tetris-yellow);
+  color: #0d0f17;
+  border-color: var(--text-bright);
+  animation: none;
+}
+
+.retro-modal-window {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
+}
+
+.pacman-mouth-top,
+.pacman-mouth-bottom {
+  box-shadow: none;
+}
+
+.pacman-loading-text {
+  text-shadow: none;
+}
+
+.go-container {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8);
+}
+
+.go-main-title,
+.go-countdown-number {
+  text-shadow: 3px 3px 0px #000;
+}
+
+.go-insert-coin-btn {
+  animation: none;
+}

@@ -83,7 +83,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
             className="retro-btn btn-primary btn-large go-insert-coin-btn"
             onClick={handleInsertCoin}
           >
-            <span className="coin-icon">🪙</span>
+            <span className="coin-icon">[¢]</span>
             <span>INSERT COIN (START)</span>
           </button>
 
@@ -95,7 +95,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
               onViewLeaderboard();
             }}
           >
-            <span>REGISTER IN HALL OF FAME 🏆</span>
+            <span>REGISTER IN HALL OF FAME ★</span>
           </button>
         </div>
 

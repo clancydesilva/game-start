@@ -53,6 +53,14 @@ const SHAPE_MATRICES: Record<string, number[][]> = {
   ]
 };
 
+// Helper to resolve CSS custom properties (e.g. 'var(--tetris-cyan)') for 2D Canvas rendering
+function resolveCanvasColor(colorStr: string): string {
+  if (!colorStr.startsWith('var(')) return colorStr;
+  const varName = colorStr.slice(4, -1).trim();
+  const computed = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return computed || '#8bac0f';
+}
+
 export const TumblingCanvas: React.FC<TumblingCanvasProps> = ({
   ideas,
   onSelectIdea,
@@ -159,10 +167,13 @@ export const TumblingCanvas: React.FC<TumblingCanvasProps> = ({
         const offsetX = -(cols * bs) / 2;
         const offsetY = -(rows * bs) / 2;
 
+        const resolvedColor = resolveCanvasColor(piece.idea.color);
+        const textBright = resolveCanvasColor('var(--text-bright)');
+
         if (isSelected) {
           // Glow outline
-          ctx.shadowColor = piece.idea.color;
-          ctx.shadowBlur = 16;
+          ctx.shadowColor = resolvedColor;
+          ctx.shadowBlur = 12;
         }
 
         mat.forEach((r, rowIdx) => {
@@ -172,21 +183,21 @@ export const TumblingCanvas: React.FC<TumblingCanvasProps> = ({
               const by = offsetY + rowIdx * bs;
 
               // Core block
-              ctx.fillStyle = piece.idea.color;
+              ctx.fillStyle = resolvedColor;
               ctx.fillRect(bx, by, bs, bs);
 
               // 3D Bevel highlight
-              ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+              ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
               ctx.fillRect(bx, by, bs, 3);
               ctx.fillRect(bx, by, 3, bs);
 
               // 3D Bevel shadow
-              ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+              ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
               ctx.fillRect(bx, by + bs - 3, bs, 3);
               ctx.fillRect(bx + bs - 3, by, 3, bs);
 
               // Black border
-              ctx.strokeStyle = '#000000';
+              ctx.strokeStyle = '#0f380f';
               ctx.lineWidth = 1.5;
               ctx.strokeRect(bx, by, bs, bs);
             }
@@ -196,7 +207,7 @@ export const TumblingCanvas: React.FC<TumblingCanvasProps> = ({
         // Idea Label under piece
         ctx.shadowBlur = 0;
         ctx.font = '8px "Press Start 2P", monospace';
-        ctx.fillStyle = isSelected ? '#ffffff' : 'rgba(255, 255, 255, 0.7)';
+        ctx.fillStyle = isSelected ? textBright : resolvedColor;
         ctx.textAlign = 'center';
         ctx.fillText(piece.idea.type + '-IDEA', 0, offsetY + rows * bs + 16);
 

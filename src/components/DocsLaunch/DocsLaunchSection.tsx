@@ -57,13 +57,13 @@ export function MyPortfolio() {
       {/* Product Hunt Launch Banner */}
       <div className="ph-launch-card">
         <div className="ph-left">
-          <div className="ph-cat-badge">😸 PRODUCT HUNT // LAUNCH DAY</div>
+          <div className="ph-cat-badge">[PH] PRODUCT HUNT // LAUNCH DAY</div>
           <h3 className="ph-title">Idea Lab for Dev Portfolios</h3>
           <p className="ph-tagline">
             Turn loose unfinished ideas into interactive tumbling Tetris blocks. Collect no-login resonance votes and pre-filled GitHub collab issues.
           </p>
           <div className="ph-badges">
-            <span className="ph-rank-badge">🏆 #1 PRODUCT OF THE DAY</span>
+            <span className="ph-rank-badge">★ #1 PRODUCT OF THE DAY</span>
             <span className="ph-pill">FEATURED IN DEV TOOLS</span>
             <span className="ph-pill">100% OPEN SOURCE</span>
           </div>

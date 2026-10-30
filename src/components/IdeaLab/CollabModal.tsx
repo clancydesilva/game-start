@@ -16,7 +16,7 @@ export const CollabModal: React.FC<CollabModalProps> = ({ idea, onClose }) => {
 
   const cleanHandle = handle.replace(/^@/, '').trim();
   const titleParam = encodeURIComponent(`[COLLAB REQUEST] ${idea.title} - @${cleanHandle || 'collaborator'}`);
-  const bodyText = `### 🎮 Idea Lab Collaboration Request
+  const bodyText = `### [IDEA LAB] Collaboration Request
 
 **Target Project / Idea:** ${idea.title}
 **Shape / Type:** ${idea.type}-Piece (${idea.stage})
@@ -24,7 +24,7 @@ export const CollabModal: React.FC<CollabModalProps> = ({ idea, onClose }) => {
 
 ---
 
-### 💡 Notes & Proposed Contribution:
+### Notes & Proposed Contribution:
 ${note || 'I would love to collaborate on prototyping this idea with you!'}
 
 ---
@@ -130,7 +130,7 @@ ${note || 'I would love to collaborate on prototyping this idea with you!'}
 
           <div className="modal-actions-row">
             <button type="submit" className="retro-btn btn-primary">
-              <span>LAUNCH GITHUB ISSUE 🚀</span>
+              <span>LAUNCH GITHUB ISSUE ↗</span>
             </button>
             <button
               type="button"

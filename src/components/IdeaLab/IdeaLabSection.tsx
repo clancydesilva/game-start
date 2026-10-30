@@ -82,7 +82,7 @@ export const IdeaLabSection: React.FC<IdeaLabSectionProps> = ({ onOpenDocs }) =>
             className="retro-btn btn-sm btn-outline"
             onClick={() => onOpenDocs?.()}
           >
-            📦 EMBED WIDGET & DOCS
+            [&gt;] EMBED WIDGET &amp; DOCS
           </button>
         </div>
       </div>

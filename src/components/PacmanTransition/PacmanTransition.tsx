@@ -6,6 +6,39 @@ interface PacmanTransitionProps {
   onTransitionComplete: () => void;
 }
 
+// 13x13 8-bit jagged pixel matrices for Pac-Man (open & half-closed chomp frames)
+const PACMAN_OPEN_GRID = [
+  [0,0,0,0,1,1,1,1,1,0,0,0,0],
+  [0,0,1,1,1,1,1,1,1,1,1,0,0],
+  [0,1,1,1,1,1,0,1,1,1,1,1,0],
+  [0,1,1,1,1,1,1,1,1,1,0,0,0],
+  [1,1,1,1,1,1,1,1,0,0,0,0,0],
+  [1,1,1,1,1,1,0,0,0,0,0,0,0],
+  [1,1,1,1,0,0,0,0,0,0,0,0,0],
+  [1,1,1,1,1,1,0,0,0,0,0,0,0],
+  [1,1,1,1,1,1,1,1,0,0,0,0,0],
+  [0,1,1,1,1,1,1,1,1,1,0,0,0],
+  [0,1,1,1,1,1,1,1,1,1,1,1,0],
+  [0,0,1,1,1,1,1,1,1,1,1,0,0],
+  [0,0,0,0,1,1,1,1,1,0,0,0,0],
+];
+
+const PACMAN_CLOSED_GRID = [
+  [0,0,0,0,1,1,1,1,1,0,0,0,0],
+  [0,0,1,1,1,1,1,1,1,1,1,0,0],
+  [0,1,1,1,1,1,0,1,1,1,1,1,0],
+  [0,1,1,1,1,1,1,1,1,1,1,1,0],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1,0,0,0,0],
+  [1,1,1,1,1,1,0,0,0,0,0,0,0],
+  [1,1,1,1,1,1,1,1,1,0,0,0,0],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [0,1,1,1,1,1,1,1,1,1,1,1,0],
+  [0,1,1,1,1,1,1,1,1,1,1,1,0],
+  [0,0,1,1,1,1,1,1,1,1,1,0,0],
+  [0,0,0,0,1,1,1,1,1,0,0,0,0],
+];
+
 export const PacmanTransition: React.FC<PacmanTransitionProps> = ({
   isActive,
   onTransitionComplete
@@ -52,9 +85,11 @@ export const PacmanTransition: React.FC<PacmanTransitionProps> = ({
 
   if (!isActive) return null;
 
-  // Pellets calculation: 16 pellets across screen
+  // Pellets calculation: 18 square pixel pellets across screen
   const pelletCount = 18;
   const pacmanPercent = progress * 115; // from 0% to 115%
+  const isMouthOpen = Math.floor(progress * 14) % 2 === 0;
+  const activeGrid = isMouthOpen ? PACMAN_OPEN_GRID : PACMAN_CLOSED_GRID;
 
   return (
     <div className="pacman-transition-overlay" aria-hidden="true">
@@ -64,7 +99,7 @@ export const PacmanTransition: React.FC<PacmanTransitionProps> = ({
         style={{ width: `${Math.min(100, pacmanPercent)}%` }}
       />
 
-      {/* Row of Pellets ahead of Pac-Man */}
+      {/* Row of Square Pixel Pellets ahead of Pac-Man */}
       <div className="pacman-pellet-track">
         {Array.from({ length: pelletCount }).map((_, idx) => {
           const pelletPercent = (idx / (pelletCount - 1)) * 96 + 2;
@@ -82,16 +117,21 @@ export const PacmanTransition: React.FC<PacmanTransitionProps> = ({
         })}
       </div>
 
-      {/* Sweeping Pac-Man sprite */}
+      {/* Sweeping Jagged 8-Bit Pixelated Pac-Man Sprite */}
       <div
-        className="pacman-character"
+        className="pacman-character pacman-pixel-grid"
         style={{
-          left: `calc(${progress * 110}% - 60px)`
+          left: `calc(${progress * 110}% - 52px)`
         }}
       >
-        <div className="pacman-mouth-top" />
-        <div className="pacman-mouth-bottom" />
-        <div className="pacman-eye" />
+        {activeGrid.map((row, rIdx) =>
+          row.map((cell, cIdx) => (
+            <div
+              key={`${rIdx}-${cIdx}`}
+              className={`pacman-pixel-cell ${cell === 1 ? 'filled' : ''}`}
+            />
+          ))
+        )}
       </div>
 
       <div className="pacman-loading-text">

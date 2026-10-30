@@ -1,0 +1,440 @@
+/* =========================================================
+   STYLE 2: CLASSIC OG GAME BOY (DMG-01) PALETTE
+   4-Shade Olive Green & Dark Charcoal Dot-Matrix LCD
+========================================================= */
+
+:root {
+  /* Classic 4-Shade Game Boy Greens + Dark Slate Bezel */
+  --gb-darkest: #1a2118;   /* Deep dark charcoal-green (INK) */
+  --gb-dark: #344232;      /* Dark muted olive-grey */
+  --gb-light: #6e7f5e;     /* Classic mid-dull olive LCD */
+  --gb-lightest: #8f9f79;  /* Classic dull pea-green LCD background */
+
+  --bg-deep: var(--gb-lightest);
+  --bg-surface: var(--gb-light);
+  --bg-card: var(--gb-lightest);
+  --border-arcade: var(--gb-darkest);
+  --border-glow: var(--gb-darkest);
+  --text-main: var(--gb-darkest);
+  --text-dim: var(--gb-dark);
+  --text-bright: var(--gb-darkest);
+
+  /* Monochrome DMG-01 Tetris Block Shades */
+  --tetris-cyan: #253023;
+  --tetris-yellow: #344232;
+  --tetris-purple: #2b3829;
+  --tetris-green: #384635;
+  --tetris-red: #1f281d;
+  --tetris-blue: #2f3d2d;
+  --tetris-orange: #3a4937;
+  --tetris-emerald: #283426;
+  --pacman-yellow: var(--gb-darkest);
+}
+
+/* Override dark hardcoded surfaces to match the Game Boy LCD screen */
+body {
+  background-color: var(--gb-lightest);
+  color: var(--gb-darkest);
+}
+
+/* Subtle dot-matrix LCD grid instead of neon CRT bloom */
+.crt-scanlines {
+  background: 
+    linear-gradient(rgba(26, 33, 24, 0.08) 50%, transparent 50%),
+    linear-gradient(90deg, rgba(26, 33, 24, 0.06) 50%, transparent 50%);
+  background-size: 3px 3px;
+  opacity: 0.7;
+}
+
+.crt-vignette {
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0) 65%,
+    rgba(26, 33, 24, 0.35) 100%
+  );
+}
+
+.arcade-large-name {
+  color: var(--gb-darkest);
+  text-shadow: 3px 3px 0px var(--gb-light);
+}
+
+.arcade-subtitle {
+  color: var(--gb-dark);
+}
+
+.arcade-credit-chip,
+.navbar-score-box,
+.arcade-hud-panel {
+  background: var(--gb-lightest);
+  border: 2px solid var(--gb-darkest);
+  color: var(--gb-darkest);
+}
+
+.retro-toggle-btn {
+  background: var(--gb-lightest);
+  color: var(--gb-dark);
+  border: 2px solid var(--gb-darkest);
+}
+
+.retro-toggle-btn.active {
+  background: var(--gb-darkest);
+  color: var(--gb-lightest);
+  border-color: var(--gb-darkest);
+  box-shadow: none;
+}
+
+.navbar-nav-tabs {
+  background: var(--gb-darkest);
+}
+
+.nav-tab-btn {
+  color: var(--gb-light);
+  border-right-color: var(--gb-dark);
+}
+
+.nav-tab-btn:hover {
+  background: var(--gb-dark);
+  color: var(--gb-lightest);
+}
+
+.nav-tab-btn.is-active {
+  background: var(--gb-lightest);
+  color: var(--gb-darkest);
+  box-shadow: inset 0 -3px 0 var(--gb-darkest);
+}
+
+.nav-active-pip {
+  color: var(--gb-darkest);
+}
+
+/* Multi-Unlock Banner & Line Clear Flash in Game Boy Mode */
+.arcade-controls-bar .simultaneous-unlock-banner {
+  background: var(--gb-darkest) !important;
+  background-image: none !important;
+  color: var(--gb-lightest) !important;
+  border: 2px solid var(--gb-darkest) !important;
+  box-shadow: 3px 3px 0px var(--gb-dark) !important;
+  animation: none !important;
+}
+
+.grid-cell-slot.row-clearing-flash {
+  animation: gbLineFlash 0.25s infinite alternate;
+}
+
+@keyframes gbLineFlash {
+  0% {
+    background: var(--gb-lightest);
+    box-shadow: inset 0 0 0 3px var(--gb-darkest);
+  }
+  100% {
+    background: var(--gb-darkest);
+    box-shadow: none;
+  }
+}
+
+/* Game Boy Style Pixel Blocks */
+.tetris-pixel-block {
+  border: 2px solid var(--gb-darkest) !important;
+  box-shadow: 
+    inset 2px 2px 0px rgba(143, 159, 121, 0.45),
+    inset -2px -2px 0px rgba(26, 33, 24, 0.7);
+}
+
+.tetris-pixel-block.is-ghost {
+  border: 2px dashed var(--gb-darkest) !important;
+  background-color: rgba(52, 66, 50, 0.25) !important;
+  box-shadow: none;
+  opacity: 0.75;
+}
+
+.block-label {
+  color: var(--gb-lightest);
+  opacity: 1;
+}
+
+.arcade-board-column,
+.arcade-queue-sidebar {
+  background: var(--gb-light);
+  border: 2px solid var(--gb-darkest);
+}
+
+.scroll-zone-badge.game-zone,
+.scroll-zone-badge.projects-zone {
+  background: var(--gb-lightest);
+  border-color: var(--gb-darkest);
+  color: var(--gb-darkest);
+}
+
+.tetris-board-frame,
+.next-piece-box,
+.tumbling-canvas-container,
+.preview-container-box {
+  background: var(--gb-lightest);
+  border-color: var(--gb-darkest);
+  box-shadow: inset 0 0 0 2px var(--gb-dark);
+}
+
+.grid-matrix-body.square-cells,
+.next-matrix-grid {
+  background: var(--gb-light);
+  border: 2px solid var(--gb-darkest);
+}
+
+.grid-cell-slot {
+  background: rgba(143, 159, 121, 0.65);
+  border: 1px solid rgba(26, 33, 24, 0.2);
+}
+
+.empty-cell-dot,
+.next-empty-dot {
+  background: rgba(26, 33, 24, 0.3);
+}
+
+/* Project Cards & Queue */
+.unlocked-counter-badge,
+.mini-tag,
+.idea-tag-chip,
+.modal-tag-chip,
+.sil-chip {
+  background: var(--gb-darkest);
+  color: var(--gb-lightest);
+  border-color: var(--gb-darkest);
+}
+
+.project-normal-div.is-unlocked-div {
+  background: var(--gb-lightest);
+  border-color: var(--gb-darkest);
+  box-shadow: 3px 3px 0px var(--gb-darkest);
+}
+
+.project-normal-div.is-unlocked-div:hover {
+  border-color: var(--gb-darkest);
+}
+
+.project-normal-div.is-pending-div {
+  background: var(--gb-light);
+  border-color: var(--gb-dark);
+  opacity: 0.85;
+}
+
+.pnd-pill,
+.idea-type-badge {
+  color: var(--gb-lightest);
+}
+
+.retro-btn,
+.btn-tiny {
+  font-family: var(--pixel-font);
+  background: var(--gb-lightest);
+  color: var(--gb-darkest);
+  border: 2px solid var(--gb-darkest);
+  box-shadow: 2px 2px 0px var(--gb-darkest);
+  cursor: pointer;
+}
+
+.btn-tiny {
+  font-size: 7px;
+  padding: 3px 6px;
+}
+
+.btn-tiny:hover {
+  background: var(--gb-darkest);
+  color: var(--gb-lightest);
+}
+
+.retro-btn.btn-primary,
+.retro-btn.btn-active,
+.sil-btn-collab {
+  background: var(--gb-darkest);
+  color: var(--gb-lightest);
+}
+
+.retro-btn.btn-outline {
+  background: var(--gb-light);
+  color: var(--gb-darkest);
+  border-color: var(--gb-darkest);
+}
+
+/* Modals, Idea Lab & Docs */
+.retro-modal-backdrop {
+  background: rgba(26, 33, 24, 0.82);
+}
+
+.retro-modal-window {
+  background: var(--gb-lightest);
+  border: 4px solid var(--gb-darkest);
+  box-shadow: 8px 8px 0px var(--gb-darkest);
+}
+
+.retro-modal-header,
+.retro-modal-footer,
+.tumbling-header-note,
+.docs-card-header,
+.preview-top-bar,
+.arcade-cabinet-footer {
+  background: var(--gb-darkest);
+  color: var(--gb-lightest);
+  border-color: var(--gb-darkest);
+}
+
+.modal-header-title,
+.retro-modal-close-btn,
+.retro-modal-close-btn:hover,
+.tumbling-header-note,
+.docs-card-title,
+.preview-top-bar,
+.footer-coin-slot,
+.footer-credits,
+.footer-social-links a {
+  color: var(--gb-lightest);
+}
+
+.modal-status-dot {
+  background: var(--gb-lightest) !important;
+  border-color: var(--gb-lightest);
+}
+
+.modal-score-badge,
+.modal-metric-badge {
+  background: var(--gb-darkest);
+  color: var(--gb-lightest);
+  border: 1px solid var(--gb-darkest);
+}
+
+.modal-tetromino-preview,
+.collab-idea-banner,
+.input-with-prefix,
+.retro-textarea,
+.collab-preview-box {
+  background: var(--gb-light);
+  border-color: var(--gb-darkest);
+  color: var(--gb-darkest);
+}
+
+.retro-input,
+.retro-textarea,
+.issue-preview-pre,
+.input-prefix {
+  color: var(--gb-darkest);
+}
+
+.retro-input::placeholder,
+.retro-textarea::placeholder {
+  color: var(--gb-dark);
+  opacity: 0.75;
+}
+
+.idea-card {
+  background: var(--gb-lightest);
+  border: 2px solid var(--gb-darkest);
+  border-top-width: 5px;
+  box-shadow: 3px 3px 0px var(--gb-darkest);
+}
+
+.idea-card:hover,
+.idea-card.idea-card-selected {
+  border-color: var(--gb-darkest);
+  box-shadow: 6px 6px 0px var(--gb-darkest);
+}
+
+.retro-btn-resonance,
+.sil-btn-res {
+  background: var(--gb-light);
+  color: var(--gb-darkest);
+  border-color: var(--gb-darkest);
+}
+
+.retro-btn-resonance:hover,
+.retro-btn-resonance.is-resonated,
+.sil-btn-res.active {
+  background: var(--gb-darkest);
+  color: var(--gb-lightest);
+  box-shadow: none;
+}
+
+.ph-launch-card,
+.standalone-idealab-root,
+.sil-card,
+.go-container,
+.go-stats-panel {
+  background: var(--gb-lightest);
+  border-color: var(--gb-darkest);
+  box-shadow: 4px 4px 0px var(--gb-darkest);
+  color: var(--gb-darkest);
+}
+
+.ph-title,
+.ph-tagline,
+.ph-cat-badge,
+.sil-title,
+.sil-card-title,
+.go-main-title,
+.go-countdown-number,
+.go-countdown-number.is-zero {
+  color: var(--gb-darkest);
+  text-shadow: none;
+}
+
+.ph-rank-badge,
+.ph-pill,
+.ph-upvote-btn,
+.ph-upvote-btn:hover,
+.ph-upvote-btn.voted,
+.go-insert-coin-btn {
+  background: var(--gb-darkest);
+  color: var(--gb-lightest);
+  border-color: var(--gb-darkest);
+  box-shadow: none;
+  animation: none;
+}
+
+.docs-code-block {
+  background: var(--gb-light);
+  color: var(--gb-darkest);
+}
+
+/* Pac-Man Transition in Game Boy Mode */
+.pacman-screen-eater {
+  background: var(--gb-darkest);
+  border-right-color: var(--gb-lightest);
+}
+
+.pacman-pixel-cell.filled {
+  background: var(--gb-lightest);
+  box-shadow: inset -1px -1px 0 var(--gb-dark);
+}
+
+.pacman-pellet,
+.pacman-pellet.power-pellet {
+  background: var(--gb-darkest);
+  border-color: var(--gb-light);
+  box-shadow: none;
+}
+
+.pacman-loading-text {
+  color: var(--gb-lightest);
+  text-shadow: none;
+}
+
+/* Game Boy Scrollbars */
+* {
+  scrollbar-color: var(--gb-darkest) var(--gb-light);
+}
+
+::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--gb-light);
+  border: 2px solid var(--gb-darkest);
+}
+
+::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--gb-dark);
+  border: 2px solid var(--gb-darkest);
+}
+
+::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--gb-darkest);
+}
