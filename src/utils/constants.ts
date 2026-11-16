@@ -19,7 +19,7 @@ export const PROJECTS: ProjectItem[] = [
     ],
     metrics: 'Active // Open Source',
     githubUrl: 'https://github.com/clancydesilva/decision-trees',
-    liveUrl: 'https://github.com/clancydesilva/decision-trees',
+    liveUrl: 'https://decision-trees.clancydesilva.dev/',
     points: 1500
   },
   {

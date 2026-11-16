@@ -703,6 +703,17 @@ export const TetrisSection: React.FC<TetrisSectionProps> = ({ onScoreChange }) =
                         >
                           <span>GITHUB REPO</span> ↗
                         </a>
+                        {project.liveUrl && project.liveUrl !== project.githubUrl && (
+                          <a
+                            href={project.liveUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="retro-btn btn-xs btn-active"
+                            onClick={() => sfx.playCoin()}
+                          >
+                            <span>LIVE DEMO</span> [▶]
+                          </a>
+                        )}
                         <button
                           type="button"
                           className="retro-btn btn-xs btn-outline"
